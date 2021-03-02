@@ -1,0 +1,159 @@
+% 
+%jff-notes
+%
+\documentclass[11pt]{article}
+\usepackage[pdftex]{graphicx}
+\usepackage{amssymb}
+\usepackage{latexsym}
+%\usepackage{relsize}
+\usepackage{textcomp}
+%processed for 10 pt 
+%\documentstyle[epsf,psfig]{article}
+%\documentstyle[epsf]{article}
+\oddsidemargin 0pt
+\topmargin -0.0cm
+\textwidth 6.2in
+\textheight 8.5in
+\baselineskip 18pt
+%\renewcommand{\baselinestretch} {1.5}
+\newenvironment{nitemize}
+   {\begin{list}{\begin{math}\bullet\end{math}}%
+      {\setlength{\leftmargin}{5mm}
+       \setlength{\topsep}{1mm}
+       \setlength{\parsep}{0in}
+       \setlength{\itemsep}{.7mm}}}%
+   {\end{list}}
+
+\newcommand{\fract}[2]{\frac{\textstyle #1}{\textstyle #2}}
+\newcommand{\trans}[3]{#1 \stackrel{#2}{\longrightarrow} #3}
+\newcommand{\notrans}[3]{#1 \stackrel{#2}{\not\! \longrightarrow} #3}
+\bibliographystyle{plain}
+\begin{document}
+\title{A simple weatherfax plugin for SDRuno}
+\author{
+Jan van Katwijk\\
+Lazy Chair Computing \\
+The Netherlands\\
+{\em J.vanKatwijk@gmail.com}}
+%\date{}
+\maketitle
+%\baselineskip 22pt
+\ \\
+\ \\
+%\includegraphics[width=140mm]{wfax-example.png}
+\ \\
+\section{Introduction}
+The SDRuno weatherfax plugin is a simple plugin to decode weatherfax signals.
+
+On shortwave (between 3 and 16 Mhz) there are from time to time
+transmissions of weatherfax charts.
+Here, in western Europe, 3588 KHz and 4601 KHz are frequencies wheere
+(almost) continuously weather charts are transmitted and can be received.
+
+The most common format for transmitting weather charts is
+{\em Wefax576}. In this format, the so-called IOC
+(index of cooperation) is 576, leading to a width if the chart of
+app 1800 pixels.
+TRransmission is with 2 lines a minute, and a chart has 1200 lines
+(so, with some header information preceding the chart, transmission
+takes more than 10 minutes).
+
+Modulation of the signal is phase shifting, with a signal deviation of
+400 Hz. 
+A transmission starts with a signal of precise 300 Hz, followed by
+a number of phase lines with which the receiver can synchronize
+with the transmission.
+Such a phase line consists of a signal encoding app 2.5 \% of the linelength
+with pure white, 95 \% of the linelength with pure black, and - again -
+2.5 \% of white.
+
+\section{SDRuno setting}
+\subsection{Setting the samplerate}
+The decoding  algorithm is implemented for use of
+a sample frequency of 12 KHz, similar to e.g. the navtex and
+the rtty plugin. The SDRuno software can provide a samplerate
+of 62.5 KHz, remaining filtering and decimation is done in
+the weatherfax plugin itself.
+The SDRuno setting is then to a samplerate of 2 MHz, and a decimation factor
+32.
+
+%\includegraphics[width=100mm]{main-widget.png}
+
+The plugin generates an audiotone of 800 Hz + the tuning offset, in my
+experience is sound very helpful in precise tuning.
+
+The sound is output with a rate of 48000, setting "AM" in the RX control window
+will set this rate.
+
+\section{setting the frequency}
+
+As said, the weatherfax frequencies are predefined, so just select
+a frequency from one of the lists of frequencies.
+In 
+\begin{verbatim}
+https://www.weather.gov/media/marine/rfax.pdf
+\end{verbatim}
+
+frequencies are given for transmissions worldwide.
+
+%\includegraphics[width=100mm]{auxiliary-spectrum-display.png}
+
+Note that - differing from some other implementations, tuning is
+precisely on the mentiuoned frequency, not 1900 Hz less!
+\section{The plugin}
+The plugin widget is shown in the picture
+
+%\includegraphics[width=100mm]{rtty-plugin-widget.png}
+
+The widget for this plugin is large, the weather chart is displayed
+on it. The size of the widget is such that a wefax576 chart is shown
+on precisely one quarter of its size (app 900 pixels wide, 600 lines).
+
+The top lines of the widget are reserved for the controls.
+
+The top line contains
+\begin{itemize}
+\item a selector for the kind of charts, default Wefax576;
+\item the modulation mode, default FM;
+\item the phase, default is the higher frequency of the signal the indicator
+for white, and the lower for black. Selecting "invers" reverses this
+interpreation;
+]item the deviation. While in Europe the deviation of the modulation is
+400 Hz, literature states that the US uses 450 Hz.
+\item a blank field (for later use);
+\item the state of the decoder. 
+\begin{itemize}
+\item APTSTART is - as the name suggests - the start state. The software
+will read incoming signals until a few seconds a signal of 300 Hz
+is received;
+\item PHASING is the state when the software is trying to synchronize.
+If - during a longer time - no reliable synchronization is made, the
+asumtpion is that the detection of the 300 Hz was erroneous, and the APTSTART
+state is entered;
+\item ON SYNC is the state when there is a reliable synchronization, and
+in this state the data lines are processed.
+The lines in the picture will be displayed on the widget.
+\item FAX\_DONE is - as the name suggests - the stated entered when
+processing the picture finishes. If {\em saving} was set, the picture
+will be stored in a file and the APTSTART state will be entered again,
+if {\\em saving} was not set, the software will wait in the final state
+until a {\em reset} is given.
+\end{itemize}
+\end{itemize}
+The second line contains 5 elements
+\begin{itemize}
+\item the {\em save} button. When set, the software will continuously
+run the sequence to decode a picture and store the result in a file.
+If set the text on the button reads {\em saving}, otherwise {\em Save}.
+\item the reset button, which does what can be expected from a reset button;
+\item a label on which - while in the APTSTART state - the frequency
+of the incoming decoded signal is displayed.
+\item a label on which - when in sync - displays the line number
+of the line currently being decoded is displayed;
+\item a "cheat" button. As said, processing a whole chart in mode wefax576
+takes well over 10 minutes. The cheat button cheats the system by forcing
+it into state "ON SYNC".
+\end{itemize}
+\end{document}
+
+
