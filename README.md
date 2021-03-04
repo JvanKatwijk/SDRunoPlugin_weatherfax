@@ -3,7 +3,7 @@
 SDRuno weatherFAX plugin
 -------------------------------------------------------------------------
 
-![overview](/wfax-example-1.png?raw=true)
+![overview](/wfax-example.png?raw=true)
 
 -----------------------------------------------------------------------
 weatherfax
