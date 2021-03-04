@@ -137,12 +137,12 @@ private:
 	                                std::complex<float> *);
 	void	        processSample	(std::complex<float>);
 
-	int	        checkFrequency	(std::vector<int>, int, int);
-	int	        checkPhase	(int, float);
-	bool	        checkPhaseLine	(int, float);
-	int	        findPhaseLine	(int, int, float);
-	int	        shiftBuffer	(std::vector<int>, int, int);
-	void	        processBuffer	(int);
+	int	        checkFrequency	(std::vector<int> &, int, int, bool);
+	int	        checkPhase	(std::vector<int> &, int, float);
+	bool	        checkPhaseLine	(std::vector<int> &, int, float);
+	int	        findPhaseLine	(std::vector<int> &, int, int, float);
+	int	        shiftBuffer	(std::vector<int> &, int, int);
+	void	        processBuffer	(std::vector<int> &, int);
 	int	        toRead;
 	void	        addPixeltoImage	(float val, int, int);
 	void	        saveImage       ();
