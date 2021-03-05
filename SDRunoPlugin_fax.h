@@ -182,4 +182,7 @@ private:
 	int16_t         lastRow; 
 	int	        stoppers;
 	int		sampleOffset;
+	std::atomic<bool> dumping;
+	bool		setDump;
+	void		doDump();
 };

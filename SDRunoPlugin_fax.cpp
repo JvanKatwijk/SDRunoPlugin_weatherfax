@@ -109,6 +109,8 @@ static int testPhase	= 0;
 	faxColor	= FAX_BLACKWHITE;
 	savingRequested	= false;
 	sampleOffset	= 0;
+	dumping.store  (false);
+	setDump = false;
 	running. store (false);
 //
 //	we draw the map on an label with a size of 900 x 600
@@ -150,7 +152,7 @@ void	SDRunoPlugin_fax::
 	                                 Complex* buffer,
 	                                 int	length,
 	                                 bool& modified) {
-	if (running. load () && !faxError) {
+	if (running. load () && !faxError && !dumping. load ()) {
 	   inputBuffer. putDataIntoBuffer (buffer, length);
 	}
 	modified = false;
@@ -466,6 +468,9 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 
 	   case WAITER:
 	      toRead --;
+		  if (setDump)
+			  doDump();
+		  setDump = false;
 	      if (savingRequested && (toRead == 0))
 	         faxState = APTSTART;
 	      break;
@@ -845,29 +850,37 @@ void	SDRunoPlugin_fax::set_correctionFactor (int f) {
 	sampleOffset = f;
 }
 
-void	SDRunoPlugin_fax::regenerate	() {
+void	SDRunoPlugin_fax::regenerate() {
+	setDump = true;
+}
+
+void	SDRunoPlugin_fax::doDump () {
 int sampleTeller	= 0;
 std::vector<int> lineBuffer;
 int	lineno		= 0;
 int	lineSamples = samplesperLine + sampleOffset;
+int maxi = lineSamples > samplesperLine ? lineSamples : samplesperLine;
 	if ((faxState != WAITER) && (faxState != FAX_DONE))
 	   return;
 	clearScreen ();
-	lineBuffer.resize(lineSamples);
+
+	lineBuffer.resize (maxi);
+	dumping.store(true);
 	while (true) {
-	   if (sampleTeller >  currentSampleIndex - lineSamples)
+	   if (sampleTeller >  currentSampleIndex - maxi)
 	      break;
 	   if ((lineno % 10) != 0) {
-	      for (int i = 0; i < nrSamples; i ++) 
+	      for (int i = 0; i < samplesperLine; i ++) 
 	         lineBuffer [i] = rawData [sampleTeller ++];
-	      processBuffer (lineBuffer, lineno, nrSamples);
+	      processBuffer (lineBuffer, lineno, samplesperLine);
 	   }
 	   else
-	      for (int i = 0; i < lineSamples; i ++)
+	      for (int i = 0; i < lineSamples; i ++) {
 	         lineBuffer [i] = rawData [sampleTeller ++];
 	      processBuffer (lineBuffer, lineno, lineSamples);
 	   }
 	   lineno ++;
 	}
+	dumping.store(false);
 }
 
