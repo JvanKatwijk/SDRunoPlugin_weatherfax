@@ -47,8 +47,10 @@ public:
         void	fax_setDeviation	(const std::string &);
 	void	handle_resetButton	();
         void	handle_saveButton	();
-	nana::label *getArea	();
 	void	handle_cheatButton	();
+	void	set_correctionFactor    (int);
+        void	regenerate       	();
+	nana::label *getArea		();
 //
 //	coming down
 	void	show_faxState		(const std::string &);
@@ -82,19 +84,34 @@ private:
 
 	// TODO: Now add your UI controls here
 
-	nana::combox	faxIOC	{*this, nana::rectangle (30, 30, 100, 20)};
-	nana::combox	faxMode{ *this, nana::rectangle (140, 30, 100, 20)};
-	nana::combox	faxPhase {*this, nana::rectangle (250, 30, 100, 20)};
-	nana::combox	faxColor {*this, nana::rectangle (360, 30, 100, 20)};
-	nana::combox	deviation {*this, nana::rectangle (470, 30, 100, 20)};
-	nana::label	theName  {*this, nana::rectangle (580, 30, 140, 20)};
-	nana::label	faxState {*this, nana::rectangle (740, 30, 140, 20)};
-	nana::button	saveButton  {*this, nana::rectangle (30, 60, 100, 20)};
-	nana::button	resetButton {*this, nana::rectangle (140, 60, 100, 20)};
-	nana::label	aptLabel {*this, nana::rectangle (250, 60, 100, 20)};
-	nana::label	lineno {*this, nana::rectangle (360, 60, 100, 20)};
-
-	nana::button	cheatButton {*this, nana::rectangle (470, 60, 100, 20)};
+	nana::combox	faxIOC	{*this,
+	                            nana::rectangle (30, 30, 100, 20)};
+	nana::combox	faxMode{ *this,
+	                            nana::rectangle (140, 30, 100, 20)};
+	nana::combox	faxPhase {*this,
+	                            nana::rectangle (250, 30, 100, 20)};
+	nana::combox	faxColor {*this,
+	                            nana::rectangle (360, 30, 100, 20)};
+	nana::combox	deviation {*this,
+	                            nana::rectangle (470, 30, 100, 20)};
+	nana::label	theName  {*this,
+	                            nana::rectangle (580, 30, 140, 20)};
+	nana::label	faxState {*this,
+	                            nana::rectangle (740, 30, 140, 20)};
+	nana::button	saveButton  {*this,
+	                            nana::rectangle (30, 60, 100, 20)};
+	nana::button	resetButton {*this,
+	                            nana::rectangle (140, 60, 100, 20)};
+	nana::label	aptLabel {*this,
+	                            nana::rectangle (250, 60, 100, 20)};
+	nana::label	lineno {*this,
+	                            nana::rectangle (360, 60, 100, 20)};
+	nana::button	cheatButton {*this,
+	                            nana::rectangle (470, 60, 100, 20)};
+	nana::button	correctButton {*this, 
+	                            nana::rectangle (580, 60, 100, 20)};
+	nana::spinbox	sampleCorrection{ *this,
+								nana::rectangle(700, 60, 100, 20) };
 	nana::label	imageLabel {*this, nana::rectangle (30, 90,
 	                                                    formWidth - 60,
 	                                                    600)};

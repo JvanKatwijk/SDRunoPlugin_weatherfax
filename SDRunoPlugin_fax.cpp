@@ -23,7 +23,7 @@
 #include	<ctime>
 #define	FAX_IF 0
 
-static FILE	*dumpFile	= nullptr;
+//static FILE	*dumpFile	= nullptr;
 //#define __TESTING__ 1
 faxParams _faxParams [] = {
 	{"Wefax288", 288, 675, 450, false, 120, 600},
@@ -108,6 +108,7 @@ static int testPhase	= 0;
 	setup_faxDecoder	("Wefax576");
 	faxColor	= FAX_BLACKWHITE;
 	savingRequested	= false;
+	sampleOffset	= 0;
 	running. store (false);
 //
 //	we draw the map on an label with a size of 900 x 600
@@ -125,7 +126,7 @@ static int testPhase	= 0;
 	           }
 		});
 
-	dumpFile	= fopen ("d:\dumpFile.txt", "w");
+//	dumpFile	= fopen ("d:\dumpFile.txt", "w");
 	m_worker = new std::thread (&SDRunoPlugin_fax::WorkerFunction, this);
 }
 
@@ -141,7 +142,7 @@ static int testPhase	= 0;
 	delete	        audioFilter;
 	delete	        faxAverager;
 	delete	        faxLowPass;
-	fclose(dumpFile);
+//	fclose(dumpFile);
 }
 
 void	SDRunoPlugin_fax::
@@ -271,8 +272,6 @@ int	k;
 //
 	faxState		= APTSTART;
 	apt_upCrossings		= 0;
-	pixelValue		= 0;
-	pixelSamples		= 0;
 	currentSampleIndex	= 0;
 	aptStartFreq		= myfaxParameters -> aptStart;
 	aptStopFreq = myfaxParameters->aptStop;
@@ -398,6 +397,9 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         for (int i = baseP; i < samplesperLine; i ++)
 	            faxLineBuffer [i - baseP] = faxLineBuffer [i];
                  bufferP        = samplesperLine - baseP;
+	         for (int i = 0; i < bufferP; i ++)
+	            rawData [i] = faxLineBuffer [i];
+	         currentSampleIndex = bufferP;
                  checkP         = 0;
 	         faxState	= SYNCED;
 	         show_faxState ("ON SYNC");
@@ -421,6 +423,9 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	   case SYNCED:
 	      faxLineBuffer [bufferP] = sampleValue;
 	      bufferP = (bufferP + 1) % samplesperLine;
+	      if ((int32_t) (rawData. size ()) <= currentSampleIndex) 
+	         rawData. resize (rawData. size () + 1024 * 1024);
+	      rawData [currentSampleIndex ++]	= sampleValue;
 	      if (linesRecognized > nrLines + 20) {
 	         checkBuffer [checkP] = sampleValue;
 	         checkP ++;
@@ -441,7 +446,7 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         }
 	      }
 	      if (bufferP == 0) {
-	         processBuffer (faxLineBuffer, linesRecognized);
+	         processBuffer (faxLineBuffer, linesRecognized, samplesperLine);
 	         linesRecognized ++;
 	         bufferP = 0;
 	         show_lineno (linesRecognized);
@@ -492,7 +497,7 @@ std::vector<int> crossings;
 	      realWhite (buffer [i])) {
 	      crossings .push_back (i);
 	      upCrossings ++;
-		  i++;
+	      i++;
 	   }
 	}
 
@@ -513,9 +518,9 @@ std::vector<int> crossings;
 	}
 
 	error = sqrt (error);
-	if (b)
-	   fprintf (dumpFile, "%d %d %f\n",
-	                      correctAmount, upCrossings, error / upCrossings);
+//	if (b)
+//	   fprintf (dumpFile, "%d %d %f\n",
+//	                      correctAmount, upCrossings, error / upCrossings);
 	return error / upCrossings < 2.0 ? upCrossings : -1;
 }
 //
@@ -530,8 +535,8 @@ int	baseP	= findPhaseLine (buffer, 0, samplesperLine, threshold);
 	   return -1;
 	if (!checkPhaseLine (buffer, baseP + 2 * samplesperLine, threshold))
 	   return -1;
-//	if (!checkPhaseLine (buffer, baseP + 3 * samplesperLine, threshold))
-//	   return -1;
+	if (!checkPhaseLine (buffer, baseP + 3 * samplesperLine, threshold))
+	   return -1;
 //	if (!checkPhaseLine (buffer, baseP + 4 * samplesperLine, threshold))
 //	   return -1;
 	return baseP;
@@ -557,7 +562,7 @@ int	nrBlacks	= 0;
 	   if (realBlack (buffer [index + i]))
 	      nrBlacks ++;
 
-	return nrBlacks > threshold * (0.94 * samplesperLine);
+	return nrBlacks > threshold * (0.95 * samplesperLine);
 }
 
 int	SDRunoPlugin_fax::findPhaseLine	(std::vector<int> &buffer,
@@ -581,16 +586,17 @@ int	SDRunoPlugin_fax::shiftBuffer	(std::vector<int> &v,
 //	and the last sample for a pixel
 //	
 void	SDRunoPlugin_fax::processBuffer	(std::vector<int> &buffer,
-	                                          int currentRow) {
+	                                          int currentRow,
+	                                          int samplesLine) {
 int	currentColumn	= 0;
+int	pixelSamples	= 0;
+float	pixelValue	= 0;
 
-	for (int samplenum = 0; samplenum < samplesperLine; samplenum ++) {
+	for (int samplenum = 0; samplenum < samplesLine; samplenum ++) {
 	   int x = buffer [samplenum];
-	   if ((int32_t) (rawData. size ()) <= currentSampleIndex) 
-	      rawData. resize (rawData. size () + 1024 * 1024);
-	   rawData [currentSampleIndex ++]	= x;
-	   float temp	= (float)numberofColumns / samplesperLine;
-	   int	columnforSample	= floor ((float)samplenum / samplesperLine * numberofColumns);
+	   float temp	= (float)numberofColumns / samplesLine;
+	   int	columnforSample	=
+	        floor ((float)samplenum / samplesLine * numberofColumns);
 	   if (columnforSample == currentColumn) { // still dealing with the same pixel
 	      if (temp * numberofColumns > currentColumn) {	// partial contribution
 	         float part_0, part_1;
@@ -682,7 +688,6 @@ faxParams	*myfaxParameters	= getFaxParams (s);
 	lpm			= myfaxParameters -> lpm;
 	samplesperLine		= WORKING_RATE * 60 / lpm;
 	lastRow			= 0;	// will change
-	pixelValue		= 0;
 	faxState		= APTSTART;
 	rawData. resize (1024 * 1024);
 	locker. unlock ();
@@ -741,8 +746,6 @@ void	SDRunoPlugin_fax::handle_resetButton	() {
 	faxState		= APTSTART;
 	show_faxState (std::string ("APTSTART"));
 	apt_upCrossings		= 0;
-	pixelValue		= 0;
-	pixelSamples		= 0;
 	linesRecognized		= 0;
 	savingRequested		= false;
 	show_savingLabel  ("Save");
@@ -835,6 +838,36 @@ void	SDRunoPlugin_fax::clearScreen () {
 	   for (int column = 0; column < numberofColumns; column++)
 	      pixelStore [row * numberofColumns + column] = 255;
 	faxContainer -> update();
+	lastRow = 0;
 }
 
+void	SDRunoPlugin_fax::set_correctionFactor (int f) {
+	sampleOffset = f;
+}
+
+void	SDRunoPlugin_fax::regenerate	() {
+int sampleTeller	= 0;
+std::vector<int> lineBuffer;
+int	lineno		= 0;
+int	lineSamples = samplesperLine + sampleOffset;
+	if ((faxState != WAITER) && (faxState != FAX_DONE))
+	   return;
+	clearScreen ();
+	lineBuffer.resize(lineSamples);
+	while (true) {
+	   if (sampleTeller >  currentSampleIndex - lineSamples)
+	      break;
+	   if ((lineno % 10) != 0) {
+	      for (int i = 0; i < nrSamples; i ++) 
+	         lineBuffer [i] = rawData [sampleTeller ++];
+	      processBuffer (lineBuffer, lineno, nrSamples);
+	   }
+	   else
+	      for (int i = 0; i < lineSamples; i ++)
+	         lineBuffer [i] = rawData [sampleTeller ++];
+	      processBuffer (lineBuffer, lineno, lineSamples);
+	   }
+	   lineno ++;
+	}
+}
 

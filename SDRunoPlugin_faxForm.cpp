@@ -330,6 +330,21 @@ void	SDRunoPlugin_faxForm::Setup	() {
 
 	lineno		.transparent (true);
 	lineno		.fgcolor (nana::colors::white);
+
+	sampleCorrection. range (-20, 20, 1);
+	sampleCorrection. value (std::to_string (0));
+	sampleCorrection.
+	   events (). text_changed ([&](const nana::arg_spinbox &s) {
+                                      set_correctionFactor (sampleCorrection. to_int ());});
+	sampleCorrection. tooltip ("set nr samples to correct line length");
+	sampleCorrection. bgcolor (nana::colors::black);
+	sampleCorrection. fgcolor (nana::colors::white);
+
+	correctButton. caption ("correct");
+	correctButton. events (). click ([&](){regenerate ();});
+        correctButton. fgcolor(nana::colors::white);
+        correctButton. bgcolor(nana::colors::black);
+	correctButton. tooltip ("use to correct the picture after picture completion");
 }
 
 void	SDRunoPlugin_faxForm::SettingsButton_Click () {
@@ -392,3 +407,11 @@ void	SDRunoPlugin_faxForm::handle_cheatButton	() {
 	m_parent. handle_cheatButton ();
 }
 
+void	SDRunoPlugin_faxForm::set_correctionFactor	(int offset) {
+	m_parent. set_correctionFactor (offset);
+}
+
+void	SDRunoPlugin_faxForm::regenerate 	() {
+	m_parent. regenerate ();
+}
+      

@@ -44,7 +44,6 @@ using namespace nana;
 #define SYNCED                  0040
 #define FAX_DONE                0100
 #define WAITER                  0200
-#define	CHEATING		        0000
 
 #define	FAX_AM			0100
 #define	FAX_FM		        0101
@@ -81,6 +80,8 @@ public:
         void	handle_resetButton	();
         void	handle_saveButton       ();
         void	handle_cheatButton	();
+	void	set_correctionFactor	(int);
+	void	regenerate		();
 //
 //	GUI setters
         void	show_faxState           (const std::string &);
@@ -142,7 +143,7 @@ private:
 	bool	        checkPhaseLine	(std::vector<int> &, int, float);
 	int	        findPhaseLine	(std::vector<int> &, int, int, float);
 	int	        shiftBuffer	(std::vector<int> &, int, int);
-	void	        processBuffer	(std::vector<int> &, int);
+	void	        processBuffer	(std::vector<int> &, int, int);
 	int	        toRead;
 	void	        addPixeltoImage	(float val, int, int);
 	void	        saveImage       ();
@@ -179,7 +180,6 @@ private:
 
 	int	        currentSampleIndex;
 	int16_t         lastRow; 
-	int32_t         pixelValue; 
-	float           pixelSamples;
 	int	        stoppers;
+	int		sampleOffset;
 };

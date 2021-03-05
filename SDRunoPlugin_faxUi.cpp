@@ -112,12 +112,20 @@ void	SDRunoPlugin_faxUi::handle_saveButton	() {
 	m_parent. handle_saveButton ();
 }
 
-nana::label	*SDRunoPlugin_faxUi::getArea	() {
-	return m_form -> getArea ();
-}
-
 void	SDRunoPlugin_faxUi::handle_cheatButton	() {
 	m_parent. handle_cheatButton ();
+}
+
+void    SDRunoPlugin_faxUi::set_correctionFactor      (int offset) {
+        m_parent. set_correctionFactor (offset);
+}
+
+void    SDRunoPlugin_faxUi::regenerate        () {
+        m_parent. regenerate ();
+}
+
+nana::label	*SDRunoPlugin_faxUi::getArea	() {
+	return m_form -> getArea ();
 }
 
 //	and downwards

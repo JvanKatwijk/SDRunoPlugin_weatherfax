@@ -38,7 +38,8 @@ public:
         void    handle_resetButton	();     
         void    handle_saveButton       ();
         void    handle_cheatButton	();
-
+	void	set_correctionFactor	(int offset);
+	void	regenerate		();
 	nana::label	*getArea	();
 //
 //      coming down
