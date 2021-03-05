@@ -76,8 +76,9 @@ with a pure white signal, and 95 \% of the linelength with pure black
 (the picture of the chart shows in the top lines just a few of these
 phase lines).
 
-The end of the transmission is again, a tone with predefined frequency for
-a few seconds, for Wefax576 a tone of 450 Hz.
+At the end of the transmission of a weatherchart, again, a tone
+with predefined frequency is transmitted, just for a few seconds.
+For Wefax576 this tone is at 450 Hz.
 
 \section{SDRuno setting}
 \subsection{Setting the samplerate}
@@ -91,34 +92,36 @@ The SDRuno setting is then to a samplerate of 2 MHz, and a decimation factor
 
 \includegraphics[width=100mm]{main-widget.png}
 
-The plugin generates an audiotone of 800 Hz + the tuning offset, in my
-experience is sound very helpful in precise tuning.
+The plugin generates an audiotone of 800 Hz + the tuning offset,
+so, when a transmission is active, two tones are heard, one for
+white and one for black.
 
 The sound is output with a rate of 48000, setting "AM" in the RX control window
 will set this rate.
 
 \subsection{Setting the frequency}
 
-As said, the weatherfax frequencies are predefined, so just select
+Transmission frequencies for weatherfax are predefined, so just select
 a frequency from one of the lists of frequencies.
 In 
 \begin{verbatim}
 https://www.weather.gov/media/marine/rfax.pdf
 \end{verbatim}
-
+one finds a list of stations.
+\par
 Note that - different from some other implementations - tuning is
-precisely on the mentioned frequency, not 1900 Hz less!
+{\em precisely} on the specified frequency, not 1900 Hz less!
 \section{The plugin}
-The plugin widget is shown in the picture below
+The widget for the plugin is shown in the picture below
 
 \includegraphics[width=140mm]{wfax-example-2.png}
 
-The widget for this plugin is large, the weather chart is displayed
+The widget is large, the weather chart is displayed
 on it. The size of the widget is such that a wefax576 chart is shown
 on precisely one quarter of its size (app 900 pixels wide, 600 lines).
-
-The top lines of the widget are reserved for the controls,
-the top line contains:
+\par
+The top two lines of the widget are reserved for the controls,
+the top one contains (from left to right)
 \begin{itemize}
 \item a selector for the kind of charts, default Wefax576, alternatively
 (but untested) Wefax288;
