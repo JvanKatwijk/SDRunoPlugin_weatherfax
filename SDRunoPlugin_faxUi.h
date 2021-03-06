@@ -36,10 +36,11 @@ public:
         void    fax_setColor            (const std::string &);
         void    fax_setDeviation        (const std::string &);
         void    handle_resetButton	();     
-        void    handle_saveButton       ();
         void    handle_cheatButton	();
 	void	set_correctionFactor	(int offset);
 	void	regenerate		();
+        void    handle_saveSingle	();
+        void    handle_saveContinuous	();
 	nana::label	*getArea	();
 //
 //      coming down

@@ -313,8 +313,11 @@ void	SDRunoPlugin_faxForm::Setup	() {
                               {fax_setDeviation (ar_cbx. widget. caption ());});
         deviation. tooltip ("Europe 1900-400, US 1950-450");
 
-	saveButton. caption ("save");
-        saveButton. events(). click ([&]() {handle_saveButton ();});
+	saveContinuous. caption ("save Cont");
+        saveContinuous. events(). click ([&]() {handle_saveContinuous ();});
+
+	saveSingle. caption ("save Sngl");
+        saveSingle. events(). click ([&]() {handle_saveSingle ();});
 
 	resetButton. caption ("reset");
         resetButton. events(). click ([&]() {handle_resetButton ();});
@@ -372,8 +375,12 @@ void	SDRunoPlugin_faxForm::fax_setDeviation	(const std::string &s) {
 	m_parent. fax_setDeviation (s);
 }
 
-void	SDRunoPlugin_faxForm::handle_saveButton  () {
-	m_parent. handle_saveButton ();
+void	SDRunoPlugin_faxForm::handle_saveContinuous  () {
+	m_parent. handle_saveContinuous ();
+}
+
+void	SDRunoPlugin_faxForm::handle_saveSingle  () {
+	m_parent. handle_saveSingle ();
 }
 
 void	SDRunoPlugin_faxForm::handle_resetButton	() {
@@ -391,7 +398,7 @@ void	SDRunoPlugin_faxForm::show_lineno	(int n) {
 }
 
 void	SDRunoPlugin_faxForm::show_saveLabel	(const std::string &s) {
-	saveButton. caption (s);
+	saveContinuous. caption (s);
 }
 
 void	SDRunoPlugin_faxForm::show_aptLabel	(int n) {

@@ -26,7 +26,7 @@
 
 // TODO: Change these numbers to the height and width of your form
 #define formWidth (960)
-#define formHeight (700)
+#define formHeight (750)
 
 class SDRunoPlugin_faxUi;
 
@@ -46,9 +46,10 @@ public:
         void	fax_setColor		(const std::string &);
         void	fax_setDeviation	(const std::string &);
 	void	handle_resetButton	();
-        void	handle_saveButton	();
 	void	handle_cheatButton	();
 	void	set_correctionFactor    (int);
+        void	handle_saveContinuous	();
+        void	handle_saveSingle	();
         void	regenerate       	();
 	nana::label *getArea		();
 //
@@ -98,7 +99,7 @@ private:
 	                            nana::rectangle (580, 30, 140, 20)};
 	nana::label	faxState {*this,
 	                            nana::rectangle (740, 30, 140, 20)};
-	nana::button	saveButton  {*this,
+	nana::button	saveContinuous  {*this,
 	                            nana::rectangle (30, 60, 100, 20)};
 	nana::button	resetButton {*this,
 	                            nana::rectangle (140, 60, 100, 20)};
@@ -110,13 +111,13 @@ private:
 	                            nana::rectangle (470, 60, 100, 20)};
 	nana::button	correctButton {*this, 
 	                            nana::rectangle (580, 60, 100, 20)};
-	nana::spinbox	sampleCorrection{ *this,
-								nana::rectangle(700, 60, 100, 20) };
+	nana::spinbox	sampleCorrection { *this,
+	                            nana::rectangle (690, 60, 80, 20) };
+	nana::button	saveSingle {*this,
+	                            nana::rectangle (780, 60, 80, 20) };
 	nana::label	imageLabel {*this, nana::rectangle (30, 90,
 	                                                    formWidth - 60,
-	                                                    600)};
-	                                                
-	
+	                                                    650)};
 	SDRunoPlugin_faxUi &m_parent;
 	IUnoPluginController &m_controller;
 };

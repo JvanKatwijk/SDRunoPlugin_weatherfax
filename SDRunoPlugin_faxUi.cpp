@@ -108,8 +108,12 @@ void	SDRunoPlugin_faxUi::handle_resetButton	() {
 	m_parent. handle_resetButton ();
 }
     
-void	SDRunoPlugin_faxUi::handle_saveButton	() {
-	m_parent. handle_saveButton ();
+void	SDRunoPlugin_faxUi::handle_saveContinuous	() {
+	m_parent. handle_saveContinuous ();
+}
+
+void	SDRunoPlugin_faxUi::handle_saveSingle	() {
+	m_parent. handle_saveSingle ();
 }
 
 void	SDRunoPlugin_faxUi::handle_cheatButton	() {

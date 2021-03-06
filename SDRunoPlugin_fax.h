@@ -78,10 +78,12 @@ public:
         void	fax_setColor            (const std::string &);
         void	fax_setDeviation        (const std::string &);
         void	handle_resetButton	();
-        void	handle_saveButton       ();
         void	handle_cheatButton	();
 	void	set_correctionFactor	(int);
-	void	regenerate		();
+        void	handle_saveContinuous	();
+        void	handle_saveSingle	();
+	void	        regenerate	();
+	
 //
 //	GUI setters
         void	show_faxState           (const std::string &);
@@ -114,22 +116,22 @@ private:
 
 	std::vector<std::complex<float>> faxToneBuffer;
 	std::vector<std::complex<float>> convBuffer;
-	int	     convIndex;
-	int16_t	     mapTable_int   [WORKING_RATE / 100];
-	float	     mapTable_float [WORKING_RATE / 100];
+	int	         convIndex;
+	int16_t	         mapTable_int   [WORKING_RATE / 100];
+	float	         mapTable_float [WORKING_RATE / 100];
 //
 //
 	std::atomic<bool>	running;
 	faxParams	*getFaxParams	(const std::string &);
-	void	    setup_faxDecoder(std::string IOC_name);
-	int	    centerFrequency;
-	int	    VFOFRequency;
-	int	    selectedFrequency;
-	int	    faxTonePhase;
-	int	    Raw_Rate;
-	int	    faxAudioRate;
-	bool	    faxError;
-	void	    WorkerFunction		();
+	void	        setup_faxDecoder(std::string IOC_name);
+	int	        centerFrequency;
+	int	        VFOFRequency;
+	int	        selectedFrequency;
+	int	        faxTonePhase;
+	int	        Raw_Rate;
+	int	        faxAudioRate;
+	bool	        faxError;
+	void	        WorkerFunction		();
 	std::thread*	    m_worker;
 
 	upFilter	*audioFilter;
@@ -146,7 +148,8 @@ private:
 	void	        processBuffer	(std::vector<int> &, int, int);
 	int	        toRead;
 	void	        addPixeltoImage	(float val, int, int);
-	void	        saveImage       ();
+	void	        saveImage_single     ();
+	void	        saveImage_auto       ();
 	void	        clearScreen	();
 
 	faxDemodulator  *myDemodulator;
@@ -165,7 +168,6 @@ private:
 	bool            phaseInvers;
 	uint8_t         faxColor;
 	int16_t         carrier;
-	uint8_t         faxMode;
 	int32_t         samplesperLine; 
 	int16_t         numberofColumns;
 	int             nrLines;
@@ -175,14 +177,15 @@ private:
 	int	        checkP;
 	int	        bufferSize;
 	int             linesRecognized;
-	bool            savingRequested;
 	int	        alarmCount;
 
 	int	        currentSampleIndex;
 	int16_t         lastRow; 
 	int	        stoppers;
-	int		sampleOffset;
-	std::atomic<bool> dumping;
-	bool		setDump;
-	void		doDump();
+	int	        sampleOffset;
+	std::atomic<bool> correcting;
+	bool		setCorrection;
+	bool	        saveContinuous;
+        bool	        saveSingle;
+	void	        doCorrection	();
 };

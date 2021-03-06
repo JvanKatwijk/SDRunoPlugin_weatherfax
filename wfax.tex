@@ -47,7 +47,7 @@ The SDRuno weatherfax plugin is a simple plugin to decode weatherfax signals.
 
 On shortwave (between 3 and 16 Mhz) there are
 transmissions of weatherfax charts on a regular base.
-Here, in western Europe, 3588 KHz and 4601 KHz are frequencies where
+Here, in western Europe, 3588 KHz and 4610 KHz are frequencies where
 (almost) continuously weather charts are transmitted that can be received
 (where I live people are extremely climate aware, so the number of
 solar panels is overwhelming, and so is the amount of jamming signals,
@@ -121,7 +121,7 @@ on it. The size of the widget is such that a wefax576 chart is shown
 on precisely one quarter of its size (app 900 pixels wide, 600 lines).
 \par
 The top two lines of the widget are reserved for the controls,
-the top one contains (from left to right)
+the {\em top one} contains (from left to right)
 \begin{itemize}
 \item a selector for the kind of charts, default Wefax576, alternatively
 (but untested) Wefax288;
@@ -154,11 +154,13 @@ If {\em saving} was not set, the software will wait in the final state
 until a {\em reset} is given.
 \end{itemize}
 \end{itemize}
-The second line contains 7 elements
+The second line contains 8 elements
 \begin{itemize}
-\item the {\em save} button. When set, the software will continuously
+\item the {\em save Cont} button. When set, the software will continuously
 run the sequence to decode a picture and store each picture in a file.
-If set the text on the button reads {\em saving}, otherwise {\em Save}.
+The files are stored in the home filder of the user, and the name
+will contain the time.
+If set the text on the button shows as text {\em saving}, otherwise {\em Save}.
 \item the {\em reset} button, which does what
 can be expected from a reset button;
 \item a label on which - while in the {\em APTSTART} state - the frequency
@@ -167,13 +169,20 @@ of the incoming decoded signal is displayed.
 of the line currently being decoded is displayed;
 \item a {\em cheat} button. As said, processing a whole chart in mode Wefax576
 takes well over 10 minutes. The cheat button cheats the system by forcing
-it into state {\em ON SYNC}.
-\item a {\em correct} button. Due to clock offsets, the picture might be slightly leaning.
+it into state {\em ON SYNC}. I.e. one can see some of the weatherchart,
+even in the midddle of the transmission.
+\item a {\em correct} button. Due to clock offsets,
+the picture might be slightly leaning (as does the weatherchart on
+the pictures).
 When the picture is complete, it can be changed by touching this button.
 The correction factor is then given in the spinbox to the right.
-\item a spinbox telling the correction factor. Since the error is usually
+\item a {\em spinbox} telling the correction factor. Since the error is usually
 small, the correction factor indicates the {\em amount of samples added
-or subtracted from a group of 10 lines}.
+or subtracted from a group of 10 lines}. Experience shows that a correction of
+"2" (i.e. 2 samples per 10 lines), will correct the picture.
+\item a {\em save Single} button. After completing the decoding of a single
+picture, the picture can be stored in a file.When selected, the
+user will be requested to specify a filename.
 \end{itemize}
 \end{document}
 

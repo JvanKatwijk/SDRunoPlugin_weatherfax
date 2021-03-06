@@ -23,7 +23,7 @@
 #include	<ctime>
 #define	FAX_IF 0
 
-//static FILE	*dumpFile	= nullptr;
+static FILE	*dumpFile	= nullptr;
 //#define __TESTING__ 1
 faxParams _faxParams [] = {
 	{"Wefax288", 288, 675, 450, false, 120, 600},
@@ -51,8 +51,8 @@ static int testPhase	= 0;
 	                                   inputBuffer	(64 * 32768),
 	                                   theMixer	(INRATE),
 	                                   passbandFilter (11,
-	                                                   -1000,
-	                                                   +1000,
+	                                                   -2000,
+	                                                   +2000,
 	                                                   INRATE),
 	                                   theDecimator (DECIMATOR),
 	                                   localMixer (WORKING_RATE),
@@ -107,13 +107,14 @@ static int testPhase	= 0;
 	deviation	= 400;		// default
 	setup_faxDecoder	("Wefax576");
 	faxColor	= FAX_BLACKWHITE;
-	savingRequested	= false;
 	sampleOffset	= 0;
-	dumping.store  (false);
-	setDump = false;
+	correcting.store  (false);
+	setCorrection = false;
+	saveContinuous	= false;
+	saveSingle	= false;
 	running. store (false);
 //
-//	we draw the map on an label with a size of 900 x 600
+//	we draw the map on an label with a size of 900 x 700
 	faxContainer = new drawing (*(m_form. getArea()));
 	faxContainer -> draw ([&](paint::graphics& graph) {
 	        for (int i = 0; i < lastRow / 2 ; i ++)
@@ -121,14 +122,14 @@ static int testPhase	= 0;
 			   float res =
 				   pixelStore[2 * i * numberofColumns + j];
 
-	           if ((i < 600) && (j < 900))
-	                 graph.set_pixel(j, i, res >= 96 ?
+	           if ((i < 700) && (j < 900))
+	                 graph.set_pixel(j, i, res >= 128 ?
 	                                          nana::colors::white :
 	                                          nana::colors::black);
 	           }
 		});
 
-//	dumpFile	= fopen ("d:\dumpFile.txt", "w");
+	dumpFile	= fopen ("d:\dumpFile.txt", "w");
 	m_worker = new std::thread (&SDRunoPlugin_fax::WorkerFunction, this);
 }
 
@@ -144,7 +145,7 @@ static int testPhase	= 0;
 	delete	        audioFilter;
 	delete	        faxAverager;
 	delete	        faxLowPass;
-//	fclose(dumpFile);
+	fclose(dumpFile);
 }
 
 void	SDRunoPlugin_fax::
@@ -152,7 +153,7 @@ void	SDRunoPlugin_fax::
 	                                 Complex* buffer,
 	                                 int	length,
 	                                 bool& modified) {
-	if (running. load () && !faxError && !dumping. load ()) {
+	if (running. load () && !faxError && !correcting. load ()) {
 	   inputBuffer. putDataIntoBuffer (buffer, length);
 	}
 	modified = false;
@@ -247,7 +248,8 @@ void	SDRunoPlugin_fax::setup_faxDecoder	(std::string IOC_name) {
 std::string h;
 int	k;
 	faxLowPass		= new LowPassFIR (FILTER_DEFAULT,
-	                                          deviation + 50,
+	                                       //   deviation + 50,
+		500,
 	                                          WORKING_RATE);
 	faxAverager		= new faxAverage (20);
 	myDemodulator		= new faxDemodulator (FAX_FM,
@@ -399,7 +401,7 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         for (int i = baseP; i < samplesperLine; i ++)
 	            faxLineBuffer [i - baseP] = faxLineBuffer [i];
                  bufferP        = samplesperLine - baseP;
-	         for (int i = 0; i < bufferP; i ++)
+	         for (int i = 0; i <samplesperLine - bufferP; i ++)
 	            rawData [i] = faxLineBuffer [i];
 	         currentSampleIndex = bufferP;
                  checkP         = 0;
@@ -459,8 +461,8 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 
 	   case FAX_DONE:
 	      show_faxState (std::string ("FAX_DONE"));
-	      if (savingRequested) {
-	         saveImage ();
+	      if (saveContinuous) {
+	         saveImage_auto ();
 	      }
 	      faxState	= WAITER;
 	      toRead	= 10 * samplesperLine;
@@ -468,11 +470,17 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 
 	   case WAITER:
 	      toRead --;
-		  if (setDump)
-			  doDump();
-		  setDump = false;
-	      if (savingRequested && (toRead == 0))
+	      if (saveContinuous && (toRead == 0))
 	         faxState = APTSTART;
+	      else
+	      if (!saveContinuous && setCorrection) {
+	         doCorrection ();
+	         setCorrection = false;
+	      }
+		  if (!saveContinuous && saveSingle) {
+			  saveImage_single();
+			  saveSingle = false;
+		  }
 	      break;
 
 	   default:		// cannot happen
@@ -507,8 +515,8 @@ std::vector<int> crossings;
 	}
 
 	show_aptLabel (upCrossings);
-	if ((upCrossings < correctAmount - 2) ||
-	    (upCrossings > correctAmount + 2)) {
+	if ((upCrossings < correctAmount - 3) ||
+	    (upCrossings > correctAmount + 3)) {
 	   return -1;
 	}
 //
@@ -523,9 +531,9 @@ std::vector<int> crossings;
 	}
 
 	error = sqrt (error);
-//	if (b)
-//	   fprintf (dumpFile, "%d %d %f\n",
-//	                      correctAmount, upCrossings, error / upCrossings);
+	if (b)
+	   fprintf (dumpFile, "%d %d %f\n",
+	                      correctAmount, upCrossings, error / upCrossings);
 	return error / upCrossings < 2.0 ? upCrossings : -1;
 }
 //
@@ -699,8 +707,7 @@ faxParams	*myfaxParameters	= getFaxParams (s);
 }
 
 void	SDRunoPlugin_fax::fax_setMode	(const std::string &s) {
-	faxMode	= s == "AM" ? FAX_AM : FAX_FM;
-	myDemodulator -> setMode (faxMode);
+	myDemodulator -> setMode (s == "AM" ? FAX_AM : FAX_FM);
 }
 
 void	SDRunoPlugin_fax::fax_setPhase	(const std::string &s) {
@@ -752,14 +759,21 @@ void	SDRunoPlugin_fax::handle_resetButton	() {
 	show_faxState (std::string ("APTSTART"));
 	apt_upCrossings		= 0;
 	linesRecognized		= 0;
-	savingRequested		= false;
-	show_savingLabel  ("Save");
+	saveContinuous		= false;
+	saveSingle		= false;
+	show_savingLabel  ("Save Cont");
 	rawData. resize (1024 * 1024);
 }
 
-void	SDRunoPlugin_fax::handle_saveButton	() {
-	savingRequested = !savingRequested;
-	show_savingLabel (savingRequested ? "saving" : "Save");
+void	SDRunoPlugin_fax::handle_saveContinuous	() {
+	saveContinuous = !saveContinuous;
+	show_savingLabel (saveContinuous ? "saving" : "Save Cont");
+}
+
+void	SDRunoPlugin_fax::handle_saveSingle	() {
+	if (saveContinuous)
+	   return;
+	saveSingle = true;
 }
 
 void	SDRunoPlugin_fax::handle_cheatButton() {
@@ -822,22 +836,6 @@ char * tt = std::asctime (std::localtime (&result));
 	return std::string(home) + "\\wFax-" + theTime + ".bmp";
 }
 
-void	SDRunoPlugin_fax::saveImage	() {
-nana::paint::graphics graph (nana::size (numberofColumns, nrLines));
-
-	for (int row = 0; row < nrLines / 2; row++) {
-	   for (int column = 0; column < numberofColumns; column++) {
-	      if (pixelStore [2 * row * numberofColumns + column] > 96)
-	         graph. set_pixel (column, row, nana::colors::white);
-	      else
-	         graph. set_pixel (column, row, nana::colors::black);
-	   }
-	}
-	std::string fileName = getFileName ();
-	show_faxState (fileName);
-	graph. save_as_file (fileName. c_str ());
-}
-
 void	SDRunoPlugin_fax::clearScreen () {
 	for (int row = 0; row < nrLines; row++)
 	   for (int column = 0; column < numberofColumns; column++)
@@ -851,24 +849,25 @@ void	SDRunoPlugin_fax::set_correctionFactor (int f) {
 }
 
 void	SDRunoPlugin_fax::regenerate() {
-	setDump = true;
+	if ((faxState != WAITER) && (faxState != FAX_DONE))
+	   return;
+	setCorrection = true;
 }
 
-void	SDRunoPlugin_fax::doDump () {
+void	SDRunoPlugin_fax::doCorrection () {
 int sampleTeller	= 0;
 std::vector<int> lineBuffer;
 int	lineno		= 0;
 int	lineSamples = samplesperLine + sampleOffset;
 int maxi = lineSamples > samplesperLine ? lineSamples : samplesperLine;
+
 	if ((faxState != WAITER) && (faxState != FAX_DONE))
 	   return;
 	clearScreen ();
 
 	lineBuffer.resize (maxi);
-	dumping.store(true);
-	while (true) {
-	   if (sampleTeller >  currentSampleIndex - maxi)
-	      break;
+	correcting. store(true);
+	while (sampleTeller < currentSampleIndex + maxi) {
 	   if ((lineno % 10) != 0) {
 	      for (int i = 0; i < samplesperLine; i ++) 
 	         lineBuffer [i] = rawData [sampleTeller ++];
@@ -881,6 +880,49 @@ int maxi = lineSamples > samplesperLine ? lineSamples : samplesperLine;
 	   }
 	   lineno ++;
 	}
-	dumping.store(false);
+	correcting. store (false);
+}
+
+void	SDRunoPlugin_fax::saveImage_single	() {
+	if ((faxState != WAITER) && (faxState != FAX_DONE))
+           return;
+	if (saveContinuous)
+	   return;
+	char* home = getenv("HOMEPATH");
+	nana::filebox fb (0, false);
+	fb.add_filter ("bitmap file", "*.bmp");
+	fb.add_filter ("All Files", "*.*");
+	fb. init_path (home);
+	auto files = fb();
+	if (!files. empty ()) {
+	   std::string fileName = files.front().string();
+	   nana::paint::graphics graph (nana::size (numberofColumns, nrLines));
+	   for (int row = 0; row < nrLines / 2; row++) {
+	      for (int column = 0; column < numberofColumns; column++) {
+	         if (pixelStore [2 * row * numberofColumns + column] > 96)
+	            graph. set_pixel (column, row, nana::colors::white);
+	         else
+	            graph. set_pixel (column, row, nana::colors::black);
+	      }
+	   }
+	   show_faxState (fileName);
+	   graph. save_as_file (fileName. c_str ());
+	}
+}
+
+void	SDRunoPlugin_fax::saveImage_auto	() {
+nana::paint::graphics graph (nana::size (numberofColumns, nrLines));
+
+	for (int row = 0; row < nrLines / 2; row++) {
+	   for (int column = 0; column < numberofColumns; column++) {
+	      if (pixelStore [2 * row * numberofColumns + column] > 96)
+	         graph. set_pixel (column, row, nana::colors::white);
+	      else
+	         graph. set_pixel (column, row, nana::colors::black);
+	   }
+	}
+	std::string fileName = getFileName ();
+	show_faxState (fileName);
+	graph. save_as_file (fileName. c_str ());
 }
 
