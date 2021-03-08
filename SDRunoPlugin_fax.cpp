@@ -23,7 +23,7 @@
 #include	<ctime>
 #define	FAX_IF 0
 
-static FILE	*dumpFile	= nullptr;
+//static FILE	*dumpFile	= nullptr;
 //#define __TESTING__ 1
 faxParams _faxParams [] = {
 	{"Wefax288", 288, 675, 450, false, 120, 600},
@@ -129,7 +129,7 @@ static int testPhase	= 0;
 	           }
 		});
 
-	dumpFile	= fopen ("d:\dumpFile.txt", "w");
+//	dumpFile	= fopen ("d:\dumpFile.txt", "w");
 	m_worker = new std::thread (&SDRunoPlugin_fax::WorkerFunction, this);
 }
 
@@ -145,7 +145,7 @@ static int testPhase	= 0;
 	delete	        audioFilter;
 	delete	        faxAverager;
 	delete	        faxLowPass;
-	fclose(dumpFile);
+//	fclose(dumpFile);
 }
 
 void	SDRunoPlugin_fax::
@@ -401,9 +401,7 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         for (int i = baseP; i < samplesperLine; i ++)
 	            faxLineBuffer [i - baseP] = faxLineBuffer [i];
                  bufferP        = samplesperLine - baseP;
-	         for (int i = 0; i <samplesperLine - bufferP; i ++)
-	            rawData [i] = faxLineBuffer [i];
-	         currentSampleIndex = bufferP;
+	         currentSampleIndex = 0;
                  checkP         = 0;
 	         faxState	= SYNCED;
 	         show_faxState ("ON SYNC");
@@ -427,9 +425,6 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	   case SYNCED:
 	      faxLineBuffer [bufferP] = sampleValue;
 	      bufferP = (bufferP + 1) % samplesperLine;
-	      if ((int32_t) (rawData. size ()) <= currentSampleIndex) 
-	         rawData. resize (rawData. size () + 1024 * 1024);
-	      rawData [currentSampleIndex ++]	= sampleValue;
 	      if (linesRecognized > nrLines + 20) {
 	         checkBuffer [checkP] = sampleValue;
 	         checkP ++;
@@ -450,6 +445,11 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         }
 	      }
 	      if (bufferP == 0) {
+	         if ((int32_t) (rawData. size ()) <= currentSampleIndex +
+	                                              samplesperLine) 
+	            rawData. resize (rawData. size () + 1024 * 1024);
+	         for (int i = 0; i < samplesperLine; i ++)
+	            rawData [currentSampleIndex ++]	= faxLineBuffer [i];
 	         processBuffer (faxLineBuffer, linesRecognized, samplesperLine);
 	         linesRecognized ++;
 	         bufferP = 0;
@@ -477,10 +477,10 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         doCorrection ();
 	         setCorrection = false;
 	      }
-		  if (!saveContinuous && saveSingle) {
-			  saveImage_single();
-			  saveSingle = false;
-		  }
+	      if (!saveContinuous && saveSingle) {
+	         saveImage_single();
+	         saveSingle = false;
+	      }
 	      break;
 
 	   default:		// cannot happen
@@ -531,9 +531,9 @@ std::vector<int> crossings;
 	}
 
 	error = sqrt (error);
-	if (b)
-	   fprintf (dumpFile, "%d %d %f\n",
-	                      correctAmount, upCrossings, error / upCrossings);
+//	if (b)
+//	   fprintf (dumpFile, "%d %d %f\n",
+//	                      correctAmount, upCrossings, error / upCrossings);
 	return error / upCrossings < 2.0 ? upCrossings : -1;
 }
 //

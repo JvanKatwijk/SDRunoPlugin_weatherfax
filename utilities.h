@@ -30,7 +30,7 @@ float	decayingAverage (float, float, float);
 float	clamp (float, float, float);
 class	faxAverage {
 public:
-		faxAverage	(int16_t);
+			faxAverage	(int16_t);
 			~faxAverage	();
 	float		filter		(float);
 	void		clear		(float);
