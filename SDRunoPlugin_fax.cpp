@@ -43,6 +43,11 @@ static int testPhase	= 0;
 #define  _USE_MATH_DEFINES
 #include        <math.h>
 
+static inline
+float Minimum(float x, float y) {
+	return x < y ? x : y;
+}
+
 	SDRunoPlugin_fax::
 	              SDRunoPlugin_fax (IUnoPluginController& controller):
 	                                   IUnoPlugin	(controller),
@@ -120,7 +125,8 @@ static int testPhase	= 0;
 	        for (int i = 0; i < lastRow / 2 ; i ++)
 		   for (int j = 0; j < numberofColumns; j++) {
 			   float res =
-				   pixelStore[2 * i * numberofColumns + j];
+			   Minimum (pixelStore[2 * i * numberofColumns + j],
+	                        pixelStore [2 * (i + 1) * numberofColumns + j]);
 
 	           if ((i < 700) && (j < 900))
 	                 graph.set_pixel(j, i, res >= 128 ?
