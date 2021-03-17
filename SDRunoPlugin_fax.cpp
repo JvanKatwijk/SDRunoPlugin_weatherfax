@@ -78,6 +78,17 @@ float Minimum(float x, float y) {
 	convIndex       = 0;
 	convBuffer. resize (INTERM_RATE / 100 + 1);
 
+	std::string a;
+	m_controller -> GetConfigurationKey ("fax_overflow", a);
+	if (a. empty ())
+	   overflow	= 60;
+	else
+	   overflow	= std::stoi (a);
+//
+//	just a check
+	if ((overflow < -10) || (overflow > 100))
+	   overflow	= 60;
+
 #ifdef	__TESTING__
 	for (int i = 0; i < 12000; i ++)
 	   oscillatorTable [i] =
@@ -135,7 +146,6 @@ float Minimum(float x, float y) {
 	           }
 		});
 
-//	dumpFile	= fopen ("d:\dumpFile.txt", "w");
 	m_worker = new std::thread (&SDRunoPlugin_fax::WorkerFunction, this);
 }
 
@@ -151,7 +161,6 @@ float Minimum(float x, float y) {
 	delete	        audioFilter;
 	delete	        faxAverager;
 	delete	        faxLowPass;
-//	fclose(dumpFile);
 }
 
 void	SDRunoPlugin_fax::
@@ -254,9 +263,9 @@ void	SDRunoPlugin_fax::setup_faxDecoder	(std::string IOC_name) {
 std::string h;
 int	k;
 	faxLowPass		= new LowPassFIR (FILTER_DEFAULT,
-	                                       //   deviation + 50,
-		500,
-	                                          WORKING_RATE);
+	                                       //  deviation + 50,
+		                                   500,
+	                                           WORKING_RATE);
 	faxAverager		= new faxAverage (20);
 	myDemodulator		= new faxDemodulator (FAX_FM,
 	                                              WORKING_RATE,
@@ -264,6 +273,7 @@ int	k;
 //	OK, we know now
 	faxParams *myfaxParameters 	= getFaxParams (IOC_name);
 	lpm			= myfaxParameters -> lpm;
+	
 	samplesperLine		= WORKING_RATE * 60 / lpm;
 	faxLineBuffer. resize (5 * samplesperLine);
 	checkBuffer. resize (samplesperLine);
@@ -460,7 +470,7 @@ std::vector<std::complex<float>> tone (faxAudioRate / WORKING_RATE);
 	         linesRecognized ++;
 	         bufferP = 0;
 	         show_lineno (linesRecognized);
-	         if (linesRecognized > nrLines + 20)
+	         if (linesRecognized > nrLines + overflow)
 	            faxState = FAX_DONE;
 	      }
 	      break;
@@ -537,9 +547,6 @@ std::vector<int> crossings;
 	}
 
 	error = sqrt (error);
-//	if (b)
-//	   fprintf (dumpFile, "%d %d %f\n",
-//	                      correctAmount, upCrossings, error / upCrossings);
 	return error / upCrossings < 2.0 ? upCrossings : -1;
 }
 //

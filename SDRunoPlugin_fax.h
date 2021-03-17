@@ -113,7 +113,7 @@ private:
 	button			faxForm;
 	drawing			*faxContainer;
 	std::vector<float>	pixelStore;
-
+	int			overflow;
 	std::vector<std::complex<float>> faxToneBuffer;
 	std::vector<std::complex<float>> convBuffer;
 	int	         convIndex;
