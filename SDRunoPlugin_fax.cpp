@@ -78,15 +78,7 @@ float Minimum(float x, float y) {
 	convIndex       = 0;
 	convBuffer. resize (INTERM_RATE / 100 + 1);
 
-	std::string a;
-	m_controller -> GetConfigurationKey ("fax_overflow", a);
-	if (a. empty ())
-	   overflow	= 60;
-	else
-	   overflow	= std::stoi (a);
-//
-//	just a check
-	if ((overflow < -10) || (overflow > 100))
+	
 	   overflow	= 60;
 
 #ifdef	__TESTING__
