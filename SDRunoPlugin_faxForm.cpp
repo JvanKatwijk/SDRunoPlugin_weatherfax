@@ -130,6 +130,7 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	bmInfo_min.bmiHeader.biCompression = BI_RGB;
 	bmInfo_min_over.bmiHeader.biCompression = BI_RGB;
 	bmInfo_bar.bmiHeader.biCompression = BI_RGB;
+	bmInfo_sett.bmiHeader.biCompression = BI_RGB;
 	bmInfo_sett_over.bmiHeader.biCompression = BI_RGB;
 	borderHeader.bfOffBits = rawDataOffset;
 	borderHeader.bfSize = bmInfo_border.bmiHeader.biSizeImage;
@@ -348,6 +349,16 @@ void	SDRunoPlugin_faxForm::Setup	() {
         correctButton. fgcolor(nana::colors::white);
         correctButton. bgcolor(nana::colors::black);
 	correctButton. tooltip ("use to correct the picture after picture completion");
+	delete[] borderPixels;
+	delete[] innerPixels;
+	delete[] closePixels;
+	delete[] closeoverPixels;
+	delete[] minPixels;
+	delete[] minoverPixels;
+	delete[] barPixels;
+	delete[] barfocusedPixels;
+	delete[] settPixels;
+	delete[] settoverPixels;
 }
 
 void	SDRunoPlugin_faxForm::SettingsButton_Click () {
