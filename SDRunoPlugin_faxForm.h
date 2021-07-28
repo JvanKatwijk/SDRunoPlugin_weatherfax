@@ -51,6 +51,7 @@ public:
         void	handle_saveContinuous	();
         void	handle_saveSingle	();
         void	regenerate       	();
+	std::string getDeviation	();
 	nana::label *getArea		();
 //
 //	coming down

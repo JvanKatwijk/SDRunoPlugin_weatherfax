@@ -57,7 +57,18 @@ std::string tmp;
 	}
 	return stoi (tmp);
 }
+//
+std::string	SDRunoPlugin_faxUi::loadDeviation () {
+	std::string tmp = "";
+	m_controller. GetConfigurationKey ("fax.Deviation", tmp);
+	return tmp;
+}
 
+std::string	SDRunoPlugin_faxUi::getDeviation() {
+	std::lock_guard<std::mutex> l(m_lock);
+	if (m_form != nullptr)
+		return m_form->getDeviation();
+}
 // Handle events from SDRuno
 // TODO: code what to do when receiving relevant events
 void	SDRunoPlugin_faxUi::HandleEvent (const UnoEvent& ev) {
@@ -102,6 +113,7 @@ void	SDRunoPlugin_faxUi::fax_setColor (const std::string &s) {
 
 void	SDRunoPlugin_faxUi::fax_setDeviation (const std::string &s) {
 	m_parent. fax_setDeviation (s);
+	m_controller.SetConfigurationKey ("fax.Deviation", s);
 }
 
 void	SDRunoPlugin_faxUi::handle_resetButton	() {

@@ -77,9 +77,7 @@ float Minimum(float x, float y) {
 	}
 	convIndex       = 0;
 	convBuffer. resize (INTERM_RATE / 100 + 1);
-
-	
-	   overflow	= 60;
+	overflow	= 60;
 
 #ifdef	__TESTING__
 	for (int i = 0; i < 12000; i ++)
@@ -95,7 +93,7 @@ float Minimum(float x, float y) {
 	                = m_controller -> GetVfoFrequency (0);
 	centerFrequency	= m_controller -> GetCenterFrequency (0);
 	faxAudioRate	= m_controller -> GetAudioSampleRate (0);
-	Raw_Rate		= m_controller -> GetSampleRate (0);
+	Raw_Rate	= m_controller -> GetSampleRate (0);
 
 	faxError         = false;
 	if ((Raw_Rate != 2000000 / 32) || (faxAudioRate != 48000)) {
@@ -122,6 +120,7 @@ float Minimum(float x, float y) {
 	saveSingle	= false;
 	running. store (false);
 //
+	fax_setDeviation (m_form. getDeviation ());
 //	we draw the map on an label with a size of 900 x 700
 	faxContainer = new drawing (*(m_form. getArea()));
 	faxContainer -> draw ([&](paint::graphics& graph) {

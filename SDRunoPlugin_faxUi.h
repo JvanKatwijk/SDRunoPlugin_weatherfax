@@ -28,6 +28,7 @@ public:
 	void ShowUi		();
 	int	LoadX		();
 	int	LoadY		();
+	std::string	loadDeviation	();
 //
 //	going up
 	void    fax_setIOC              (const std::string &);
@@ -42,6 +43,8 @@ public:
         void    handle_saveSingle	();
         void    handle_saveContinuous	();
 	nana::label	*getArea	();
+	std::string	getDeviation		();
+	
 //
 //      coming down
         void    show_faxState           (const std::string &);

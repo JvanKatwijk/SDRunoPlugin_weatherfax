@@ -306,10 +306,18 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	faxColor .events (). selected ([&] (const nana::arg_combox &ar_cbx)
                             {fax_setColor (ar_cbx. widget. caption ());});
         faxColor. tooltip ("Select a color mode");
-
+//
+//	load a predefined value for the deviation, if any
+	std::string deviationInd = m_parent. loadDeviation ();
 	deviation. push_back ("1900-400");
 	deviation. push_back ("1950-450");
-	deviation. option (0);
+	if (deviationInd == "1900-400")
+	   deviation. option (0);
+	if (deviationInd == "1950-450")
+		deviation.option(1);
+	else
+		deviation.option(0);
+
 	deviation .events (). selected ([&] (const nana::arg_combox &ar_cbx)
                               {fax_setDeviation (ar_cbx. widget. caption ());});
         deviation. tooltip ("Europe 1900-400, US 1950-450");
@@ -432,4 +440,8 @@ void	SDRunoPlugin_faxForm::set_correctionFactor	(int offset) {
 void	SDRunoPlugin_faxForm::regenerate 	() {
 	m_parent. regenerate ();
 }
-      
+
+std::string	SDRunoPlugin_faxForm::getDeviation	() {
+	return deviation. text (deviation. option ());
+}
+
