@@ -8,6 +8,9 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 
+#define  _USE_MATH_DEFINES
+#include        <math.h>
+
 #include "SDRunoPlugin_fax.h"
 #include "SDRunoPlugin_faxUi.h"
 //
@@ -77,7 +80,7 @@ float Minimum(float x, float y) {
 	}
 	convIndex       = 0;
 	convBuffer. resize (INTERM_RATE / 100 + 1);
-	overflow	= 60;
+	overflow	= 100;
 
 #ifdef	__TESTING__
 	for (int i = 0; i < 12000; i ++)
@@ -124,19 +127,27 @@ float Minimum(float x, float y) {
 //	we draw the map on an label with a size of 900 x 700
 	faxContainer = new drawing (*(m_form. getArea()));
 	faxContainer -> draw ([&](paint::graphics& graph) {
-	        for (int i = 0; i < lastRow / 2 ; i ++)
-		   for (int j = 0; j < numberofColumns; j++) {
-			   float res =
-			   Minimum (pixelStore[2 * i * numberofColumns + j],
-	                        pixelStore [2 * (i + 1) * numberofColumns + j]);
+	        for (int i = 0; i < lastRow / 2 ; i ++) {
+	           std::vector<float> line  (numberofColumns);
+	           std::vector<float> out_1   (910);
+	           std::vector<float> out_2   (910);
+	           for (int j = 0; j < numberofColumns; j ++)
+	              line [j] = pixelStore [2 * i * numberofColumns + j];
+	           processLine (out_1, line, 900, numberofColumns);
+	           for (int j = 0; j < numberofColumns; j ++)
+	              line [j] = pixelStore [(2 * i + 1) * numberofColumns + j];
+	           processLine (out_2, line, 900, numberofColumns);
 
-	           if ((i < 700) && (j < 900))
+	           for (int j = 0; j < 900; j ++) {
+	              float res = 
+	                      Minimum (out_1 [j], out_2 [j]);
+	              if ((i < 700) && (j < 900))
 	                 graph.set_pixel(j, i, res >= 128 ?
 	                                          nana::colors::white :
 	                                          nana::colors::black);
 	           }
+	        }
 		});
-
 	m_worker = new std::thread (&SDRunoPlugin_fax::WorkerFunction, this);
 }
 
@@ -270,8 +281,6 @@ int	k;
 	checkBuffer. resize (samplesperLine);
 	fax_IOC			= myfaxParameters -> IOC;
 	numberofColumns		= M_PI * fax_IOC;
-	if (numberofColumns > 900)
-	   numberofColumns 	= 900;
 	nrLines			= myfaxParameters -> nrLines;
 	faxColor		= myfaxParameters -> color ?
 	                                    FAX_COLOR: FAX_BLACKWHITE;
@@ -646,6 +655,45 @@ float	pixelValue	= 0;
 	   pixelSamples		= 1;
 	}
 }
+
+void	SDRunoPlugin_fax::processLine (std::vector<float> &result,
+	                               std::vector<float> &samples,
+	                               int columns, int samplesperLine) {
+int currentColumn	= 0;
+float pixelSamples	= 0;
+float pixelValue	= 0;
+
+	for (int sampleNum = 0; sampleNum < samplesperLine; sampleNum ++) {
+	   float x = samples [sampleNum];
+	   float temp = (float)columns / samplesperLine;
+	   int columnforSample = 
+	      floor ((float)sampleNum / samplesperLine * columns);
+
+	   if (columnforSample == currentColumn) { // the same pixel
+	      if (temp * numberofColumns > currentColumn) { //partial contribution
+                 float part_0, part_1;
+// part 0 is for this pixel
+                 part_0 = temp * columns - currentColumn;
+// and part_1 is for the next one
+                 part_1         = (1 - (temp * columns - currentColumn));
+                 pixelValue     += part_0 * x;
+                 pixelSamples   += part_0;
+	             result [currentColumn] = pixelValue / pixelSamples;
+                 currentColumn ++;
+                 pixelValue     = part_1 * x;
+                 pixelSamples   = part_1;
+                 continue;
+	      }
+	   }
+//
+//      we expect here currentCol > currentColumn
+           if (pixelSamples > 0)        // simple "assertion"
+	          result [currentColumn] = pixelValue / pixelSamples;
+           currentColumn        = columnforSample;
+           pixelValue           = x;
+           pixelSamples         = 1;
+	}
+}
 //
 //
 static int flipper = 10;
@@ -901,9 +949,9 @@ void	SDRunoPlugin_fax::saveImage_single	() {
 	if (!files. empty ()) {
 	   std::string fileName = files.front().string();
 	   nana::paint::graphics graph (nana::size (numberofColumns, nrLines));
-	   for (int row = 0; row < nrLines / 2; row++) {
+	   for (int row = 0; row < nrLines; row++) {
 	      for (int column = 0; column < numberofColumns; column++) {
-	         if (pixelStore [2 * row * numberofColumns + column] > 96)
+	         if (pixelStore [row * numberofColumns + column] > 96)
 	            graph. set_pixel (column, row, nana::colors::white);
 	         else
 	            graph. set_pixel (column, row, nana::colors::black);
@@ -917,9 +965,9 @@ void	SDRunoPlugin_fax::saveImage_single	() {
 void	SDRunoPlugin_fax::saveImage_auto	() {
 nana::paint::graphics graph (nana::size (numberofColumns, nrLines));
 
-	for (int row = 0; row < nrLines / 2; row++) {
+	for (int row = 0; row < nrLines; row++) {
 	   for (int column = 0; column < numberofColumns; column++) {
-	      if (pixelStore [2 * row * numberofColumns + column] > 96)
+	      if (pixelStore [row * numberofColumns + column] > 96)
 	         graph. set_pixel (column, row, nana::colors::white);
 	      else
 	         graph. set_pixel (column, row, nana::colors::black);

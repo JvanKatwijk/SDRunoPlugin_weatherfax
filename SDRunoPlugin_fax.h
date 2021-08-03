@@ -146,6 +146,9 @@ private:
 	int	        findPhaseLine	(std::vector<int> &, int, int, float);
 	int	        shiftBuffer	(std::vector<int> &, int, int);
 	void	        processBuffer	(std::vector<int> &, int, int);
+	void		processLine	(std::vector<float> &,
+                                         std::vector<float> &, int, int);
+
 	int	        toRead;
 	void	        addPixeltoImage	(float val, int, int);
 	void	        saveImage_single     ();
