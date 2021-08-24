@@ -241,7 +241,7 @@ void	SDRunoPlugin_fax::WorkerFunction () {
 
 static inline
 std::complex<float> cmul (std::complex<float> x, float y) {
-	return std::complex<float>(real(x) * y, imag(x) * y);
+	return std::complex<float>(real (x) * y, imag (x) * y);
 }
 
 int     SDRunoPlugin_fax::resample       (std::complex<float> in,
@@ -264,6 +264,8 @@ int     SDRunoPlugin_fax::resample       (std::complex<float> in,
 void	SDRunoPlugin_fax::setup_faxDecoder	(std::string IOC_name) {
 std::string h;
 int	k;
+faxParams *myfaxParameters = getFaxParams(IOC_name);
+
 	faxLowPass		= new LowPassFIR (FILTER_DEFAULT,
 	                                       //  deviation + 50,
 		                                   500,
@@ -273,16 +275,15 @@ int	k;
 	                                              WORKING_RATE,
 	                                              deviation);
 //	OK, we know now
-	faxParams *myfaxParameters 	= getFaxParams (IOC_name);
-	lpm			= myfaxParameters -> lpm;
+	lpm			= myfaxParameters	-> lpm;
 	
 	samplesperLine		= WORKING_RATE * 60 / lpm;
 	faxLineBuffer. resize (5 * samplesperLine);
 	checkBuffer. resize (samplesperLine);
-	fax_IOC			= myfaxParameters -> IOC;
+	fax_IOC			= myfaxParameters ->  IOC;
 	numberofColumns		= M_PI * fax_IOC;
 	nrLines			= myfaxParameters -> nrLines;
-	faxColor		= myfaxParameters -> color ?
+	faxColor		= myfaxParameters	->  color ?
 	                                    FAX_COLOR: FAX_BLACKWHITE;
 	carrier			= FAX_IF;	// default
 	phaseInvers		= false;
@@ -293,8 +294,8 @@ int	k;
 	faxState		= APTSTART;
 	apt_upCrossings		= 0;
 	currentSampleIndex	= 0;
-	aptStartFreq		= myfaxParameters -> aptStart;
-	aptStopFreq = myfaxParameters->aptStop;
+	aptStartFreq		= myfaxParameters	-> aptStart;
+	aptStopFreq		= myfaxParameters	-> aptStop;
 	show_faxState (std::string ("APTSTART"));
 }
 	   
@@ -316,7 +317,7 @@ bool	isWhite (int16_t x) {
 //	as always, we "process" one sample at the time.
 //
 void    SDRunoPlugin_fax::process (std::complex<float> z) {
-std::complex<float> out [256];  // IN_RATE / DECIMATOR
+std::complex<float> out [512];  // IN_RATE / DECIMATOR
 int     cnt;
 
 	cnt = resample (z, out);
@@ -536,7 +537,7 @@ std::vector<int> crossings;
 	   return -1;
 	}
 //
-//	we now know that the number of upcrossings is app right
+//	we now know that the number of upcrossings is appr right
 //	we compute the error between the measures distances between
 //	successive upcrossings and the distance it should be for
 //	a decent signal with frequency Frequency.
