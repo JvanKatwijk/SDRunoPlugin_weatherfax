@@ -97,7 +97,9 @@ private:
 	nana::combox	deviation {*this,
 	                            nana::rectangle (470, 30, 100, 20)};
 	nana::label	theName  {*this,
-	                            nana::rectangle (580, 30, 140, 20)};
+	                            nana::rectangle (580, 30, 100, 20)};
+	nana::label	copyRightLabel {*this, 
+	                            nana::rectangle (700, 30, 30, 20)};
 	nana::label	faxState {*this,
 	                            nana::rectangle (740, 30, 140, 20)};
 	nana::button	saveContinuous  {*this,

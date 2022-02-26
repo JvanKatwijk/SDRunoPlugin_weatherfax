@@ -57,12 +57,11 @@ float Minimum(float x, float y) {
 	                                   m_form	(*this, controller),
 	                                   m_worker	(nullptr),
 	                                   inputBuffer	(64 * 32768),
-	                                   theMixer	(INRATE),
 	                                   passbandFilter (11,
 	                                                   -2000,
 	                                                   +2000,
 	                                                   INRATE),
-	                                   theDecimator (DECIMATOR),
+	                                   theDecimator (INRATE / WORKING_RATE),
 	                                   localMixer (WORKING_RATE),
 	                                   faxLineBuffer (600),
 	                                   faxAudioBuffer (16 * 32768),
@@ -70,16 +69,6 @@ float Minimum(float x, float y) {
 	m_controller            = &controller;
 	running. store (false);
 
-//      we want to "work" with a rate of 12000, and since we arrive
-//      from IN_RATE we first decimate and filter to 12500 and then
-//      interpolate for the rest
-	for (int i = 0; i < WORKING_RATE / 100; i ++) {
-	   float inVal  = float (INTERM_RATE / 100);
-	   mapTable_int [i]     = int (floor (i * (inVal / (WORKING_RATE / 100))));
-	   mapTable_float [i]   = i * (inVal / (WORKING_RATE / 100)) - mapTable_int [i];
-	}
-	convIndex       = 0;
-	convBuffer. resize (INTERM_RATE / 100 + 1);
 	overflow	= 100;
 
 #ifdef	__TESTING__
@@ -92,17 +81,10 @@ float Minimum(float x, float y) {
 	faxTonePhase   = 0;
 	m_controller    -> RegisterStreamProcessor (0, this);
 	m_controller    -> RegisterAudioProcessor (0, this);
-	selectedFrequency
-	                = m_controller -> GetVfoFrequency (0);
-	centerFrequency	= m_controller -> GetCenterFrequency (0);
+	m_controller	-> SetDemodulatorType (0,
+	                           IUnoPluginController::DemodulatorIQOUT);
 	faxAudioRate	= m_controller -> GetAudioSampleRate (0);
 	Raw_Rate	= m_controller -> GetSampleRate (0);
-
-	faxError         = false;
-	if ((Raw_Rate != 2000000 / 32) || (faxAudioRate != 48000)) {
-	   show_faxState ("Please set input rate 2000000 / 32 and audiorate to 48000");
-	   faxError      = true;
-	}
 
 	faxToneBuffer. resize (faxAudioRate);
 	for (int i = 0; i < faxAudioRate; i ++) {
@@ -155,7 +137,7 @@ float Minimum(float x, float y) {
 	running.store(false);
 	m_worker 	-> join();
 	m_controller    -> UnregisterStreamProcessor (0, this);
-//	m_controller    -> UnregisterAudioProcessor (0, this);
+	m_controller    -> UnregisterAudioProcessor (0, this);
 	faxContainer	-> clear();
 	delete	        faxContainer;
 	delete	        m_worker;
@@ -170,9 +152,7 @@ void	SDRunoPlugin_fax::
 	                                 Complex* buffer,
 	                                 int	length,
 	                                 bool& modified) {
-	if (running. load () && !faxError && !correcting. load ()) {
-	   inputBuffer. putDataIntoBuffer (buffer, length);
-	}
+	(void)channel; (void)buffer; (void)length;
 	modified = false;
 }
 
@@ -180,6 +160,18 @@ void	SDRunoPlugin_fax::AudioProcessorProcess (channel_t channel,
 	                                         float* buffer,
 	                                         int length,
 	                                         bool& modified) {
+//	Handling IQ input, note that SDRuno interchanges I and Q elements
+        if (!modified) {
+           for (int i = 0; i < length; i++) {
+              std::complex<float> sample =
+                           std::complex<float>(buffer [2 * i +  1],
+                                               buffer [2 * i]);
+              sample = passbandFilter.Pass (sample);
+              if (theDecimator.Pass (sample, &sample))
+                 inputBuffer.putDataIntoBuffer (&sample, 1);
+           }
+        }
+
 	if (faxAudioBuffer. GetRingBufferReadAvailable () >= length * 2) {
 	   faxAudioBuffer. getDataFromBuffer (buffer, length * 2);
 	   modified = true;
@@ -191,13 +183,6 @@ void	SDRunoPlugin_fax::AudioProcessorProcess (channel_t channel,
 void	SDRunoPlugin_fax::HandleEvent (const UnoEvent& ev) {
 	switch (ev. GetType ()) {
 	   case UnoEvent::FrequencyChanged:
-	      selectedFrequency =
-	              m_controller ->GetVfoFrequency (ev. GetChannel ());
-	      centerFrequency = m_controller -> GetCenterFrequency(0);
-	      locker. lock ();
-	      passbandFilter.
-	             update (selectedFrequency - centerFrequency, 2000);
-	      locker. unlock ();
 	      break;
 
 	   case UnoEvent::CenterFrequencyChanged:
@@ -210,7 +195,7 @@ void	SDRunoPlugin_fax::HandleEvent (const UnoEvent& ev) {
 }
 
 #define	BUFFER_SIZE 4096
-Complex buffer[BUFFER_SIZE];
+std::complex<float> buffer[BUFFER_SIZE];
 void	SDRunoPlugin_fax::WorkerFunction () {
 
 	running. store (true);
@@ -222,16 +207,9 @@ void	SDRunoPlugin_fax::WorkerFunction () {
 	      break;
 
 	   (void)inputBuffer. getDataFromBuffer (buffer, BUFFER_SIZE);
-	   int theOffset = centerFrequency - selectedFrequency;
+	   
 	   for (int i = 0; i < BUFFER_SIZE; i++) {
-	      std::complex<float> sample =
-	                std::complex<float>(buffer [i]. real, buffer [i]. imag);
-	      locker.lock ();
-	      sample   = passbandFilter. Pass (sample);
-	      locker.unlock ();
-	      sample   = theMixer. do_shift (sample, -theOffset);
-	      if (theDecimator. Pass (sample, &sample))
-	         process (sample);
+	      processSample (buffer [i]);
 	   }  
 	}
 
@@ -242,23 +220,6 @@ void	SDRunoPlugin_fax::WorkerFunction () {
 static inline
 std::complex<float> cmul (std::complex<float> x, float y) {
 	return std::complex<float>(real (x) * y, imag (x) * y);
-}
-
-int     SDRunoPlugin_fax::resample       (std::complex<float> in,
-	                                      std::complex<float> *out) {
-	convBuffer [convIndex ++] = in;
-	if (convIndex >= convBuffer. size ()) {
-	   for (int i = 0; i < WORKING_RATE / 100; i ++) {
-	      int16_t  inpBase       = mapTable_int [i];
-	      float    inpRatio      = mapTable_float [i];
-	      out [i]       = cmul (convBuffer [inpBase + 1], inpRatio) +
-	                          cmul (convBuffer [inpBase], 1 - inpRatio);
-	   }
-	   convBuffer [0]       = convBuffer [convBuffer. size () - 1];
-	   convIndex    = 1;
-	   return WORKING_RATE / 100;
-	}
-	return -1;
 }
 
 void	SDRunoPlugin_fax::setup_faxDecoder	(std::string IOC_name) {
@@ -314,21 +275,6 @@ bool	isWhite (int16_t x) {
 	return x >= 128;
 }
 //
-//	as always, we "process" one sample at the time.
-//
-void    SDRunoPlugin_fax::process (std::complex<float> z) {
-std::complex<float> out [512];  // IN_RATE / DECIMATOR
-int     cnt;
-
-	cnt = resample (z, out);
-	if (cnt < 0)
-	   return;
-
-	for (int i = 0; i < cnt; i++) {
-	   processSample (out[i]);
-	}
-}
-
 void	SDRunoPlugin_fax::processSample (std::complex<float> z) {
 int sampleValue;
 int	baseP;

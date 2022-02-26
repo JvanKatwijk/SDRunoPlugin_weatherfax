@@ -25,9 +25,8 @@ class		upFilter;
 #include	"utilities.h"
 #include	"fax-demodulator.h"  
 
-#define         DECIMATOR       5
-#define         INRATE          (2000000 / 32)
-#define         INTERM_RATE     (INRATE / DECIMATOR)
+
+#define         INRATE          192000
 #define         WORKING_RATE    12000
 #define	        FILTER_DEFAULT	21
 
@@ -105,7 +104,6 @@ private:
 	std::mutex	        locker;
 	IUnoPluginController	*m_controller;
 	RingBuffer<Complex>     inputBuffer;
-	faxShifter	        theMixer;
 	faxBandfilter	        passbandFilter;
 	decimator_25	        theDecimator;
 	faxShifter	        localMixer;
@@ -115,29 +113,19 @@ private:
 	std::vector<float>	pixelStore;
 	int			overflow;
 	std::vector<std::complex<float>> faxToneBuffer;
-	std::vector<std::complex<float>> convBuffer;
-	int	         convIndex;
-	int16_t	         mapTable_int   [WORKING_RATE / 100];
-	float	         mapTable_float [WORKING_RATE / 100];
 //
 //
 	std::atomic<bool>	running;
 	faxParams	*getFaxParams	(const std::string &);
 	void	        setup_faxDecoder(std::string IOC_name);
-	int	        centerFrequency;
 	int	        VFOFRequency;
-	int	        selectedFrequency;
 	int	        faxTonePhase;
 	int	        Raw_Rate;
 	int	        faxAudioRate;
-	bool	        faxError;
 	void	        WorkerFunction		();
 	std::thread*	    m_worker;
 
 	upFilter	*audioFilter;
-	void	        process	        (std::complex<float>);
-	int	        resample	(std::complex<float>,
-	                                std::complex<float> *);
 	void	        processSample	(std::complex<float>);
 
 	int	        checkFrequency	(std::vector<int> &, int, int, bool);

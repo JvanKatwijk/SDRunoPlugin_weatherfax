@@ -337,6 +337,11 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	faxState	.transparent (true);
 	faxState	.fgcolor (nana::colors::white);
 
+	copyRightLabel	.transparent (true);
+	copyRightLabel	.fgcolor (nana::colors::white);
+	copyRightLabel	.caption ("\xa9");
+	copyRightLabel	.tooltip ("created by Jan van Katwijk, all rights reserved");
+
 	aptLabel	.transparent(true);
 	aptLabel	.fgcolor(nana::colors::white);
 
