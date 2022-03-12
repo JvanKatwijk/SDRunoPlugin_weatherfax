@@ -12,10 +12,18 @@ transmitted on shortwave
   READ THIS FIRST installing the plugin
 -----------------------------------------------------------------------------
 
-Since the fax is a small band signal (less than 1 KHz in this plugin),
-the samplerate used as input for the plugin is *62500* samples/second.
+The weatherfax signal has a width of less than 1 KHz, since the minimum width
+of the samplerate from SDR devices is 2 MHz, there is some decimation
+required.
 
-**On the main widget select samplerate 2000000, and decimation factor 32**.
+In this version, the plugin uses the SP1 stream, a data stream of 192 KHz,
+provided for by the SDRuno platform.
+
+It seems wide though to use the zooming facility of the main spectrum widget
+to make the signal visible, a "shadow" band will show in which the signal
+of interest can be found.
+
+The SP exit is selected by the plugin!
 
 ![overview](/drm-main-widget.png?raw=true)
 
@@ -38,7 +46,6 @@ are still used to transmit weathercharts.
 The picture shows a (noise) signal, 4610 KHz,
 with the weatherfax plugin.
 
-The plugin assumes an inputrate of 2000000 / 32 (i.e. 62.5 KHz).
 The frequencies on which weathercharts are transmitted are to be found in
 e.g.
 
