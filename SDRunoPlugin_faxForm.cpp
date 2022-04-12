@@ -9,6 +9,9 @@
 #include <io.h>
 #include <shlobj.h>
 
+float	xBuf[faxHeight * faxWidth];
+
+
 //	Form constructor with handles to parent and uno controller -
 //	launches form Setup
 	SDRunoPlugin_faxForm::
@@ -22,6 +25,8 @@
 
 // Form deconstructor
 	SDRunoPlugin_faxForm::~SDRunoPlugin_faxForm () {
+	faxContainer -> clear ();
+	delete faxContainer;
 }
 
 // Start Form and start Nana UI processing
@@ -221,7 +226,7 @@ void	SDRunoPlugin_faxForm::Setup	() {
 
 	// This code sets the plugin size, title and what to do when the X is pressed
 	size(nana::size(formWidth, formHeight));
-	caption ("SDRuno weatherfax plugin");
+	caption ("SDRuno weatherfax-2 plugin");
 	events().destroy([&] { m_parent.FormClosed(); });
 
 	//Initialize header bar
@@ -235,7 +240,7 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	title_bar_label.size(nana::size(65, 12));
 	title_bar_label.move(nana::point((formWidth / 2) - 5, 9));
 	title_bar_label.format(true);
-	title_bar_label.caption("< bold size = 6 color = 0x000000 font = \"Verdana\">weatherfax</>");
+	title_bar_label.caption("< bold size = 6 color = 0x000000 font = \"Verdana\">weatherfax-2</>");
 	title_bar_label.text_align(nana::align::center, nana::align_v::center);
 	title_bar_label.fgcolor(nana::color_rgb(0x000000));
 	title_bar_label.transparent(true);
@@ -277,32 +282,63 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	sett_button.transparent(true);
 
 	// TODO: Extra Form code goes here
-	
+
+//	we draw the map on an label with a size of faxWidth x faxHeight
+	faxContainer = new drawing (imageLabel);
+	faxContainer -> draw ([&](paint::graphics& graph) {
+	        for (int i = 0; i < faxHeight; i ++) {
+	           for (int j = 0; j < faxWidth; j ++) {
+	              float res = xBuf [i * faxWidth + j];
+	              graph.set_pixel (j, i, res >= 128 ?
+	                                          nana::colors::white :
+	                                          nana::colors::black);
+	           }
+	        }
+		});
+	std::string iocInd	= m_parent. load_ioc ();
 	faxIOC	.push_back ("Wefax576");
 	faxIOC	.push_back ("Wefax288");
-	faxIOC	.option (0);
+	if (iocInd == "Wefax288")
+	   faxIOC. option (1);
+	else
+	   faxIOC .option (0);
 	faxIOC	.events (). selected ([&] (const nana::arg_combox &ar_cbx)
                             {fax_setIOC (ar_cbx. widget. caption ());});
         faxIOC. tooltip ("IOC");
 
+	std::string demodMode	= m_parent. load_demodMode ();
 	faxMode	.push_back ("FM");
 	faxMode	.push_back ("AM");
-	faxMode	.option (0);
+	if (demodMode == "AM")
+	   faxMode. option (1);
+	else
+	   faxMode. option (0);
 	faxMode	.events (). selected ([&] (const nana::arg_combox &ar_cbx)
                             {fax_setMode (ar_cbx. widget. caption ());});
         faxMode. tooltip ("Mode AM or FM");
 
+	std::string phaseInd = m_parent. load_phase ();
 	faxPhase. push_back ("phase");
 	faxPhase. push_back ("inverse");
-	faxPhase. option (0);
+	if (phaseInd == "inverse")
+		faxPhase.option(1);
+	else
+		faxPhase.option(0);
 	faxPhase .events (). selected ([&] (const nana::arg_combox &ar_cbx)
                             {fax_setPhase (ar_cbx. widget. caption ());});
         faxMode. tooltip ("Use normal phasing or inverse phase for decoding");
 
+	std::string colorInd	= m_parent. load_faxColor ();
         faxColor .push_back ("BW");
 	faxColor .push_back ("GRAY");
 	faxColor .push_back ("COLOR");
-	faxColor .option (0);
+	if (colorInd == "GRAY")
+	   faxColor. option (1);
+	else
+	if (colorInd == "COLOR")
+	   faxColor. option (2);
+	else
+	   faxColor .option (0);
 	faxColor .events (). selected ([&] (const nana::arg_combox &ar_cbx)
                             {fax_setColor (ar_cbx. widget. caption ());});
         faxColor. tooltip ("Select a color mode");
@@ -314,9 +350,9 @@ void	SDRunoPlugin_faxForm::Setup	() {
 	if (deviationInd == "1900-400")
 	   deviation. option (0);
 	if (deviationInd == "1950-450")
-		deviation.option(1);
+	   deviation.option (1);
 	else
-		deviation.option(0);
+	   deviation.option(0);
 
 	deviation .events (). selected ([&] (const nana::arg_combox &ar_cbx)
                               {fax_setDeviation (ar_cbx. widget. caption ());});
@@ -448,5 +484,30 @@ void	SDRunoPlugin_faxForm::regenerate 	() {
 
 std::string	SDRunoPlugin_faxForm::getDeviation	() {
 	return deviation. text (deviation. option ());
+}
+
+std::string	SDRunoPlugin_faxForm::get_phase	() {
+	return faxPhase. text (faxPhase. option ());
+}
+
+std::string	SDRunoPlugin_faxForm::get_ioc	() {
+	return faxIOC. text (faxIOC. option ());
+}
+
+std::string	SDRunoPlugin_faxForm::get_demodMode	() {
+	return faxMode. text (faxMode. option ());
+}
+
+std::string	SDRunoPlugin_faxForm::get_faxColor	() {
+	return faxColor. text (faxColor. option ());
+}
+
+void	SDRunoPlugin_faxForm::drawLine	(const std::vector<float> &v, int l) {
+	for (int i = 0; i < faxWidth; i ++)
+	   xBuf [l * faxWidth + i] = v [i];
+}
+
+void	SDRunoPlugin_faxForm::updateImage	() {
+	faxContainer -> update ();
 }
 

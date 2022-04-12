@@ -1,6 +1,6 @@
 
 --------------------------------------------------------------------------
-SDRuno weatherFAX plugin
+SDRuno weatherFAX plugin Version 2
 -------------------------------------------------------------------------
 
 The "fax" plugin for SDRuno is a plugin for decoding weatherfax signals
@@ -28,6 +28,7 @@ The SP exit is selected by the plugin!
 ![overview](/drm-main-widget.png?raw=true)
 
 The plugin itself can be stored in the folder for community plugins
+(in my system "..\Documents\CommunityPlugins".
 
 The plugin is - as other plugins - developed under MSVC. Its functioning
 depends on lots of other "dll's" (Dynamic Load Libraries);
@@ -44,6 +45,16 @@ How do I fix the api-ms-win-crt-runtime-l1-1-0. dll missing error?
     Download Visual C++ Redistributable for Visual Studio 2015 from Microsoft directly.
     Install or Repair the Visual C++ Redistributable for Visual Studio 2015 on your computer.
 
+----------------------------------------------------------------------
+Version 2
+----------------------------------------------------------------------
+
+From a functional point of view, the difference between Version 2 and 
+the previous versions is that now all settings are recorded and kept
+between invocations of the plugin.
+
+Internally, there are quite some changes, mainly to improve the 
+readability of the code.
 
 -----------------------------------------------------------------------
 weatherfax
@@ -51,7 +62,7 @@ weatherfax
 
 Even in this time of internet and satelites, shortwave ansmissions
 are still used to transmit weathercharts.
-The picture shows a (noise) signal, 4610 KHz,
+The picture shows a (noisy) signal, 4610 KHz,
 with the weatherfax plugin.
 
 The frequencies on which weathercharts are transmitted are to be found in

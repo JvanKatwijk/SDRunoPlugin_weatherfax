@@ -33,33 +33,22 @@ std::complex<float> cdiv (std::complex<float> z, float v) {
 	return std::complex<float>(real(z) / v, imag(z) / v);
 }
 
-	faxDemodulator::faxDemodulator	(int8_t	mode,
-	                                 int32_t rate,
-	                                 int32_t dev) {
+	faxDemodulator::faxDemodulator	(int32_t rate) {
 
-	this	-> mode	= mode;
 	this	-> Rate	= rate;
-	deviation	= dev;
 	prevSample	= std::complex<float> (0, 0);
 }
 
 	faxDemodulator::~faxDemodulator	() {
 }
 
-void	faxDemodulator::setMode		(int8_t m) {
-	mode = m;
-}
-
-void	faxDemodulator::setDeviation	(int16_t dev) {
-	deviation	= dev;
-}
-//
 //	demodulate returns a value in the range -127 .. 127
-int16_t	faxDemodulator::demodulate (std::complex<float> z) {
+int16_t	faxDemodulator::demodulate (std::complex<float> z,
+	                            int Mode, int deviation) {
 float	res;
 
 	z		= cdiv (z, abs (z));
-	if (mode == FAX_AM)
+	if (Mode == FAX_AM)
 	   return abs (z) * 255.0;
 
 	res		= arg (conj (prevSample) * z) / (2 * M_PI) * Rate;

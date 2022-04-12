@@ -40,7 +40,7 @@ void	SDRunoPlugin_faxUi::ShowUi () {
 // TODO: Change Template to plugin name
 int	SDRunoPlugin_faxUi::LoadX () {
 std::string tmp;
-	m_controller.GetConfigurationKey ("fax.X", tmp);
+	m_controller. GetConfigurationKey ("fax.X", tmp);
 	if (tmp.empty ()) {
 	   return -1;
 	}
@@ -51,7 +51,7 @@ std::string tmp;
 // TODO: Change Template to plugin name
 int	SDRunoPlugin_faxUi::LoadY () {
 std::string tmp;
-	m_controller.GetConfigurationKey ("fax.Y", tmp);
+	m_controller. GetConfigurationKey ("fax.Y", tmp);
 	if (tmp.empty ()) {
 	   return -1;
 	}
@@ -61,14 +61,88 @@ std::string tmp;
 std::string	SDRunoPlugin_faxUi::loadDeviation () {
 	std::string tmp = "";
 	m_controller. GetConfigurationKey ("fax.Deviation", tmp);
-	return tmp;
+	if (tmp. empty ())
+	   return "";
+	else
+	   return tmp;
 }
 
-std::string	SDRunoPlugin_faxUi::getDeviation() {
+std::string	SDRunoPlugin_faxUi::load_ioc () {
+	std::string tmp = "";
+	m_controller. GetConfigurationKey ("fax.ioc", tmp);
+	if (tmp. empty ())
+	   return "";
+	else
+	   return tmp;
+}
+
+std::string	SDRunoPlugin_faxUi::load_phase	() {
+	std::string tmp = "";
+	m_controller. GetConfigurationKey ("fax.phase", tmp);
+	if (tmp.empty())
+		return "";
+	else
+	   return tmp;
+}
+
+std::string	SDRunoPlugin_faxUi::load_demodMode () {
+	std::string tmp = "";
+	m_controller. GetConfigurationKey ("fax.demodMode", tmp);
+	if (tmp. empty ())
+	   return "";
+	else
+	   return tmp;
+}
+
+std::string	SDRunoPlugin_faxUi::load_faxColor () {
+	std::string tmp = "";
+	m_controller. GetConfigurationKey ("fax.faxColor", tmp);
+	if (tmp.empty())
+		return "";
+	else
+	   return tmp;
+}
+
+std::string	SDRunoPlugin_faxUi::getDeviation () {
 	std::lock_guard<std::mutex> l(m_lock);
 	if (m_form != nullptr)
-		return m_form->getDeviation();
+	   return m_form -> getDeviation ();
+	else
+	   return "";
 }
+
+std::string	SDRunoPlugin_faxUi::get_phase	() {
+	std::lock_guard<std::mutex> l(m_lock);
+	if (m_form != nullptr)
+	   return m_form -> get_phase ();
+	else
+	   return "";
+}
+
+std::string	SDRunoPlugin_faxUi::get_ioc         () {
+	std::lock_guard<std::mutex> l(m_lock);
+	if (m_form != nullptr)
+	   return m_form -> get_ioc ();
+	else
+	   return "";
+}
+
+std::string	SDRunoPlugin_faxUi::get_demodMode   () {
+	std::lock_guard<std::mutex> l(m_lock);
+	if (m_form != nullptr)
+	   return m_form -> get_demodMode ();
+	else
+	   return "";
+}
+
+std::string	SDRunoPlugin_faxUi::get_faxColor    () {
+	std::lock_guard<std::mutex> l(m_lock);
+	if (m_form != nullptr)
+	   return m_form -> get_faxColor ();
+	else
+	   return "";
+}
+
 // Handle events from SDRuno
 // TODO: code what to do when receiving relevant events
 void	SDRunoPlugin_faxUi::HandleEvent (const UnoEvent& ev) {
@@ -97,23 +171,27 @@ void	SDRunoPlugin_faxUi::FormClosed () {
 
 void	SDRunoPlugin_faxUi::fax_setIOC	(const std::string &s) {
 	m_parent. fax_setIOC (s);
+	m_controller. SetConfigurationKey ("fax.ioc", s);
 }
 
 void	SDRunoPlugin_faxUi::fax_setMode (const std::string &s) {
 	m_parent. fax_setMode (s);
+	m_controller. SetConfigurationKey ("fax.demodMode", s);
 }
 
 void	SDRunoPlugin_faxUi::fax_setPhase (const std::string &s) {
 	m_parent. fax_setPhase (s);
+	m_controller. SetConfigurationKey ("fax.phase", s);
 }
 
 void	SDRunoPlugin_faxUi::fax_setColor (const std::string &s) {
 	m_parent. fax_setColor (s);
+	m_controller. SetConfigurationKey ("fax.faxColor", s);
 }
 
 void	SDRunoPlugin_faxUi::fax_setDeviation (const std::string &s) {
 	m_parent. fax_setDeviation (s);
-	m_controller.SetConfigurationKey ("fax.Deviation", s);
+	m_controller. SetConfigurationKey ("fax.Deviation", s);
 }
 
 void	SDRunoPlugin_faxUi::handle_resetButton	() {
@@ -168,4 +246,19 @@ void	SDRunoPlugin_faxUi::show_aptLabel	(int n) {
 	if (m_form != nullptr)
 	   m_form -> show_aptLabel (n);
 }
+//
+/////////////////////////////////////////////////////////////////////////
+
+void	SDRunoPlugin_faxUi::updateImage     () {
+	std::lock_guard<std::mutex> l (m_lock);
+        if (m_form != nullptr)
+           m_form -> updateImage ();
+}
+
+void	SDRunoPlugin_faxUi::drawLine	(const std::vector<float> &v, int line) {
+        std::lock_guard<std::mutex> l (m_lock);
+        if (m_form != nullptr)
+           m_form -> drawLine (v, line);
+}
+ 
 

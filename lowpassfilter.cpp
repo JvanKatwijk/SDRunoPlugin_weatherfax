@@ -57,6 +57,31 @@ float	sum	= 0.0;
 	LowPassFIR::~LowPassFIR () {
 }
 
+void	LowPassFIR::newKernel (int32_t Fc) {
+int16_t	i;
+float	*tmp = (float *)_alloca (filterSize * sizeof (float));
+float	f	= (float)Fc / sampleRate;
+float	sum	= 0.0;
+
+	for (i = 0; i < filterSize; i ++) {
+	   if (i == filterSize / 2)
+	      tmp [i] = 2 * M_PI * f;
+	   else 
+	      tmp [i] = sin (2 * M_PI * f * (i - filterSize/2))/ (i - filterSize/2);
+//
+//	Blackman window
+	   tmp [i]  *= (0.42 -
+		    0.5 * cos (2 * M_PI * (float)i / filterSize) +
+		    0.08 * cos (4 * M_PI * (float)i / filterSize));
+
+	   sum += tmp [i];
+	}
+
+	for (i = 0; i < filterSize; i ++)
+	   filterKernel [i] = std::complex<float> (tmp [i] / sum, 0);
+}
+
+
 std::complex<float>	LowPassFIR::Pass (std::complex<float> z) {
 int16_t	i;
 std::complex<float>	tmp	= 0;
@@ -71,10 +96,5 @@ std::complex<float>	tmp	= 0;
 
 	ip = (ip + 1) % filterSize;
 	return tmp;
-}
-
-float	LowPassFIR::Pass (float v) {
-std::complex<float> x = std::complex<float> (v, 0);
-	return real (Pass (x));
 }
 

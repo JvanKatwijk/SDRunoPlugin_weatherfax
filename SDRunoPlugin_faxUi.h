@@ -26,9 +26,15 @@ public:
 	void FormClosed			();
 
 	void ShowUi		();
-	int	LoadX		();
-	int	LoadY		();
+	int	LoadX			();
+	int	LoadY			();
 	std::string	loadDeviation	();
+	std::string	load_phase	();
+	std::string	load_ioc	();
+	std::string	load_demodMode	();
+	std::string	load_faxColor	();
+	void		updateImage	();
+	void		drawLine	(const std::vector<float> &, int);
 //
 //	going up
 	void    fax_setIOC              (const std::string &);
@@ -43,7 +49,11 @@ public:
         void    handle_saveSingle	();
         void    handle_saveContinuous	();
 	nana::label	*getArea	();
-	std::string	getDeviation		();
+	std::string	getDeviation	();
+	std::string	get_phase	();
+        std::string	get_ioc		();
+        std::string	get_demodMode	();
+        std::string	get_faxColor	();
 	
 //
 //      coming down

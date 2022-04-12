@@ -33,7 +33,8 @@ public:
 	                         int32_t sampleRate);
 		~LowPassFIR	();
 std::complex<float> Pass	(std::complex<float> z);
-float		Pass		(float);
+void		newKernel	(int32_t Fc);
+
 private:
 	std::vector<std::complex<float>> filterKernel;
 	std::vector<std::complex<float>> Buffer;

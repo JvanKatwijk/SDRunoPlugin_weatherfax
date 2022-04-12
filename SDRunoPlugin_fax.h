@@ -23,8 +23,6 @@ class		upFilter;
 #include	"lowpassfilter.h"
 #include	"fax-params.h"
 #include	"utilities.h"
-#include	"fax-demodulator.h"  
-
 
 #define         INRATE          192000
 #define         WORKING_RATE    12000
@@ -99,34 +97,30 @@ public:
 private:
 //
 //	we need some functions to get the data in from the SDRuno
-	std::mutex		m_lock;
-	SDRunoPlugin_faxUi      m_form;
-	std::mutex	        locker;
 	IUnoPluginController	*m_controller;
+	SDRunoPlugin_faxUi      m_form;
+	std::thread*		m_worker;
 	RingBuffer<Complex>     inputBuffer;
 	faxBandfilter	        passbandFilter;
 	decimator_25	        theDecimator;
 	faxShifter	        localMixer;
+	std::vector<int>	faxLineBuffer;
 	RingBuffer<float>	faxAudioBuffer;
-	button			faxForm;
-	drawing			*faxContainer;
+
 	std::vector<float>	pixelStore;
 	int			overflow;
-	std::vector<std::complex<float>> faxToneBuffer;
 //
 //
 	std::atomic<bool>	running;
 	faxParams	*getFaxParams	(const std::string &);
-	void	        setup_faxDecoder(std::string IOC_name);
-	int	        VFOFRequency;
 	int	        faxTonePhase;
-	int	        Raw_Rate;
 	int	        faxAudioRate;
 	void	        WorkerFunction		();
-	std::thread*	    m_worker;
 
-	upFilter	*audioFilter;
-	void	        processSample	(std::complex<float>);
+	void		fax_setup	(const std::string &s);
+	std::string	selected_IOC;
+
+	void		processSample	(int);
 
 	int	        checkFrequency	(std::vector<int> &, int, int, bool);
 	int	        checkPhase	(std::vector<int> &, int, float);
@@ -136,47 +130,60 @@ private:
 	void	        processBuffer	(std::vector<int> &, int, int);
 	void		processLine	(std::vector<float> &,
                                          std::vector<float> &, int, int);
+	int	        demodulate	(std::complex<float> z);
+//
+//	These two talk to the FAX screen
+	void	        clearScreen	();
+	void		drawPicture	(int);
 
 	int	        toRead;
 	void	        addPixeltoImage	(float val, int, int);
 	void	        saveImage_single     ();
 	void	        saveImage_auto       ();
-	void	        clearScreen	();
 
-	faxDemodulator  *myDemodulator;
-	LowPassFIR      *faxLowPass;
-	faxAverage*	faxAverager;
 	std::vector<uint8_t>     rawData;
-	
-	uint8_t	        faxState;
-	int16_t	        fax_IOC;
-	float	        lpm;
-	float	        f_lpm;
-	int16_t	        deviation;
-	int16_t	        apt_upCrossings;
-	int16_t	        aptStartFreq;
-	int16_t	        aptStopFreq;
-	bool            phaseInvers;
-	uint8_t         faxColor;
+//
+//	system wide parameters
+	std::atomic<bool>	resetFlag;
+	std::atomic<bool>	cheatFlag;
 	int16_t         carrier;
-	int32_t         samplesperLine; 
-	int16_t         numberofColumns;
-	int             nrLines;
-	std::vector<int>	faxLineBuffer;
-	std::vector<int>	checkBuffer;
-	int             bufferP;
-	int	        checkP;
-	int	        bufferSize;
-	int             linesRecognized;
-	int	        alarmCount;
-
-	int	        currentSampleIndex;
-	int16_t         lastRow; 
-	int	        stoppers;
-	int	        sampleOffset;
+	uint8_t	        faxState;	
+	int 		deviation;
+	int		bufferSize;
 	std::atomic<bool> correcting;
 	bool		setCorrection;
 	bool	        saveContinuous;
         bool	        saveSingle;
 	void	        doCorrection	();
+	std::vector<int>	checkBuffer;
+//
+//	Mode specifics
+	struct {
+	   std::string	name;
+	   int16_t      fax_IOC;
+	   float	lpm;
+	   int16_t	aptStartFreq;
+	   int16_t	aptStopFreq;
+	   bool		phaseInvers;
+	   uint8_t	faxColor;
+	   int32_t	samplesperLine; 
+	   int16_t	nrColumns;
+	   int		nrLines;
+	   int		demodMode;
+	} faxMode;
+//
+//	Fax instance specific parameters
+	struct {
+	   int		faxState;
+	   int		bufferP;
+	   int		checkP;
+	   int		linesRecognized;
+	   int		alarmCount;
+	   int	        currentSampleIndex;
+	   int16_t	lastRow; 
+	   int	        stoppers;
+	   int	        sampleOffset;
+	   int		flipper;
+	} theFax;
+
 };

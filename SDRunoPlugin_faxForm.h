@@ -19,6 +19,8 @@
 
 #include <iunoplugincontroller.h>
 
+using namespace nana;
+
 // Shouldn't need to change these
 #define topBarHeight (27)
 #define bottomBarHeight (8)
@@ -27,6 +29,10 @@
 // TODO: Change these numbers to the height and width of your form
 #define formWidth (960)
 #define formHeight (750)
+
+#define	faxWidth	(formWidth - 60)
+#define	faxHeight	(formHeight - 100)
+
 
 class SDRunoPlugin_faxUi;
 
@@ -52,7 +58,13 @@ public:
         void	handle_saveSingle	();
         void	regenerate       	();
 	std::string getDeviation	();
+	std::string get_phase		();
+	std::string get_ioc		();
+	std::string get_demodMode	();
+	std::string get_faxColor	();
 	nana::label *getArea		();
+	void	updateImage		();
+	void	drawLine		(const std::vector<float> &, int);
 //
 //	coming down
 	void	show_faxState		(const std::string &);
@@ -119,8 +131,9 @@ private:
 	nana::button	saveSingle {*this,
 	                            nana::rectangle (780, 60, 80, 20) };
 	nana::label	imageLabel {*this, nana::rectangle (30, 90,
-	                                                    formWidth - 60,
-	                                                    650)};
+	                                                    faxWidth,
+	                                                    faxHeight)};
+	drawing		*faxContainer;
 	SDRunoPlugin_faxUi &m_parent;
 	IUnoPluginController &m_controller;
 };

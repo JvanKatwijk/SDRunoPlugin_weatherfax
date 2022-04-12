@@ -28,15 +28,11 @@
 
 class	faxDemodulator {
 public:
-			faxDemodulator	(int8_t, int32_t, int32_t);
-			~faxDemodulator	(void);
-	int16_t		demodulate	(std::complex<float>);
-	void		setMode		(int8_t);
-	void		setDeviation	(int16_t);
+			faxDemodulator	(int32_t);
+			~faxDemodulator	();
+	int16_t		demodulate	(std::complex<float>, int, int);
 private:
-	int8_t		mode;
 	int32_t		Rate;
-	int32_t		deviation;
 	std::complex<float>	prevSample;
 };
 

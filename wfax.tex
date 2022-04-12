@@ -47,7 +47,7 @@ The SDRuno weatherfax plugin is a simple plugin to decode weatherfax signals.
 
 On shortwave (between 3 and 16 Mhz) there are
 transmissions of weatherfax charts on a regular base.
-Here, in western Europe, 3588 KHz and 4610 KHz are frequencies where
+Here, in western Europe, 3588 KHz, 4610 and 7880 KHz are frequencies where
 (almost) continuously weather charts are transmitted that can be received
 (where I live people are extremely climate aware, so the number of
 solar panels is overwhelming, and so is the amount of jamming signals,
@@ -67,8 +67,8 @@ of a single chart takes more than 10 minutes.
 Modulation of the signal is by phase shifting, with a signal deviation of
 app  +400 Hz for white, and -400 Hz for black.
 
-A transmission starts with a predefined signal, a few seconds, for Wefax576
-precise 300 Hz,
+A transmission starts with a predefined signal, for Wefax576
+a signal at precise 300 Hz,
 followed by a number of {\em phase lines} with which the receiver can synchronize
 with the transmission.
 Such a {\em phase line} starts and ends with 2.5 \% of the linelength
