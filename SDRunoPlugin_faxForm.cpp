@@ -358,6 +358,12 @@ void	SDRunoPlugin_faxForm::Setup	() {
                               {fax_setDeviation (ar_cbx. widget. caption ());});
         deviation. tooltip ("Europe 1900-400, US 1950-450");
 
+	overflow. range (0, 300, 20);
+	overflow. value (std::to_string (50));
+	overflow.
+           events (). text_changed ([&](const nana::arg_spinbox &s) {
+                                      set_overflow (overflow. to_int ());});
+
 	saveContinuous. caption ("save Cont");
         saveContinuous. events(). click ([&]() {handle_saveContinuous ();});
 
@@ -441,6 +447,10 @@ void	SDRunoPlugin_faxForm::handle_saveContinuous  () {
 
 void	SDRunoPlugin_faxForm::handle_saveSingle  () {
 	m_parent. handle_saveSingle ();
+}
+
+void	SDRunoPlugin_faxForm::set_overflow (int n) {
+	m_parent. set_overflow (n);
 }
 
 void	SDRunoPlugin_faxForm::handle_resetButton	() {

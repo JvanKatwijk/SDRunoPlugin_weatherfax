@@ -26,8 +26,8 @@ public:
 	void FormClosed			();
 
 	void ShowUi		();
-	int	LoadX			();
-	int	LoadY			();
+	int		LoadX		();
+	int		LoadY		();
 	std::string	loadDeviation	();
 	std::string	load_phase	();
 	std::string	load_ioc	();
@@ -47,6 +47,7 @@ public:
 	void	set_correctionFactor	(int offset);
 	void	regenerate		();
         void    handle_saveSingle	();
+	void	set_overflow		(int);
         void    handle_saveContinuous	();
 	nana::label	*getArea	();
 	std::string	getDeviation	();

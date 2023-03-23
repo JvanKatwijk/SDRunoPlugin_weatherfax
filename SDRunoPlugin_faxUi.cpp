@@ -206,6 +206,10 @@ void	SDRunoPlugin_faxUi::handle_saveSingle	() {
 	m_parent. handle_saveSingle ();
 }
 
+void	SDRunoPlugin_faxUi::set_overflow	(int n) {
+	m_parent. set_overflow (n);
+}
+
 void	SDRunoPlugin_faxUi::handle_cheatButton	() {
 	m_parent. handle_cheatButton ();
 }

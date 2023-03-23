@@ -113,7 +113,6 @@
     <ClCompile Include="SDRunoPlugin_faxUi.cpp" />
     <ClCompile Include="fax-shifter.cpp" />
     <ClCompile Include="fax-bandfilter.cpp" />
-    <ClCompile Include="utilities.cpp" />
     <ClCompile Include="up-filter.cpp" />
     <ClCompile Include="decimator-25.cpp" />
     <ClCompile Include="lowpassfilter.cpp" />
@@ -126,7 +125,6 @@
     <ClInclude Include="fax-bandfilter.h" />
     <ClInclude Include="fax-shifter.h" />
     <ClInclude Include="ringbuffer.h" />
-    <ClInclude Include="utilities.h" />
     <ClInclude Include="up-filter.h" />
     <ClInclude Include="decimator-25.h" />
     <ClInclude Include="lowpassfilter.h" />

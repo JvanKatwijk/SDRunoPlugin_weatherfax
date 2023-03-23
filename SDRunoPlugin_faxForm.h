@@ -28,7 +28,7 @@ using namespace nana;
 
 // TODO: Change these numbers to the height and width of your form
 #define formWidth (960)
-#define formHeight (750)
+#define formHeight (780)
 
 #define	faxWidth	(formWidth - 60)
 #define	faxHeight	(formHeight - 100)
@@ -46,17 +46,18 @@ public:
 	void	Run			();
 //
 //	going up
-        void	fax_setIOC		(const std::string &);
-        void	fax_setMode		(const std::string &);
-        void	fax_setPhase		(const std::string &);
-        void	fax_setColor		(const std::string &);
-        void	fax_setDeviation	(const std::string &);
+	void	fax_setIOC		(const std::string &);
+	void	fax_setMode		(const std::string &);
+	void	fax_setPhase		(const std::string &);
+	void	fax_setColor		(const std::string &);
+	void	fax_setDeviation	(const std::string &);
 	void	handle_resetButton	();
 	void	handle_cheatButton	();
 	void	set_correctionFactor    (int);
-        void	handle_saveContinuous	();
-        void	handle_saveSingle	();
-        void	regenerate       	();
+	void	handle_saveContinuous	();
+	void	handle_saveSingle	();
+	void	set_overflow		(int);
+	void	regenerate       	();
 	std::string getDeviation	();
 	std::string get_phase		();
 	std::string get_ioc		();
@@ -115,21 +116,23 @@ private:
 	nana::label	faxState {*this,
 	                            nana::rectangle (740, 30, 140, 20)};
 	nana::button	saveContinuous  {*this,
-	                            nana::rectangle (30, 60, 100, 20)};
+	                            nana::rectangle (30, 60, 80, 20)};
 	nana::button	resetButton {*this,
-	                            nana::rectangle (140, 60, 100, 20)};
+	                            nana::rectangle (120, 60, 80, 20)};
 	nana::label	aptLabel {*this,
-	                            nana::rectangle (250, 60, 100, 20)};
+	                            nana::rectangle (210, 60, 80, 20)};
 	nana::label	lineno {*this,
-	                            nana::rectangle (360, 60, 100, 20)};
+	                            nana::rectangle (300, 60, 80, 20)};
 	nana::button	cheatButton {*this,
-	                            nana::rectangle (470, 60, 100, 20)};
+	                            nana::rectangle (390, 60, 80, 20)};
 	nana::button	correctButton {*this, 
-	                            nana::rectangle (580, 60, 100, 20)};
+	                            nana::rectangle (480, 60, 80, 20)};
 	nana::spinbox	sampleCorrection { *this,
-	                            nana::rectangle (690, 60, 80, 20) };
+	                            nana::rectangle (570, 60, 80, 20) };
 	nana::button	saveSingle {*this,
-	                            nana::rectangle (780, 60, 80, 20) };
+	                            nana::rectangle (660, 60, 80, 20) };
+	nana::spinbox	overflow {*this,
+	                            nana::rectangle (750, 60, 80, 20) };
 	nana::label	imageLabel {*this, nana::rectangle (30, 90,
 	                                                    faxWidth,
 	                                                    faxHeight)};

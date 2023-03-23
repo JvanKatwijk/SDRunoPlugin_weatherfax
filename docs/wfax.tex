@@ -80,24 +80,20 @@ At the end of the transmission of a weatherchart, again, a tone
 with predefined frequency is transmitted, just for a few seconds.
 For Wefax576 this tone is at 450 Hz.
 
-\section{SDRuno setting}
+\section{SDRuno settings}
 \subsection{Setting the samplerate}
 The implementation uses a sample frequency of {\em 12 KHz},
 similar to e.g. the navtex and the rtty plugin.
-The SDRuno software can provide a samplerate
-of 62.5 KHz, remaining filtering and decimation is done in
-the weatherfax plugin itself.
-The SDRuno setting is then to a samplerate of 2 MHz, and a decimation factor
-32.
 
-\includegraphics[width=100mm]{main-widget.png}
+This implementation select the so-called {\em IQ-OUT} option, so
+decoding basically uses the unprocessed input, down-sampled to 192000.
+One should realize that the SDRuno spectrum display shows default a
+wide band, the advantage is that one sees a lot of signals, the disadvantage
+is that precise tuning, based on the view on the spectrum is not easy.
 
 The plugin generates an audiotone of 800 Hz + the tuning offset,
 so, when a transmission is active, two tones are heard, one for
 white and one for black.
-
-The sound is output with a rate of 48000, setting "AM" in the RX control window
-will set this rate.
 
 \subsection{Setting the frequency}
 
